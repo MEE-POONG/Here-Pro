@@ -30,11 +30,17 @@ export default function AdminProductsPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
         loadData();
     }, []);
+
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     async function loadData() {
         const [prodData, catData] = await Promise.all([getProducts(), getCategories()]);
@@ -89,18 +95,30 @@ export default function AdminProductsPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800">{trans.title}</h1>
                     <p className="text-gray-500 mt-1">{trans.subtitle}</p>
                 </div>
                 {!isFormOpen && (
-                    <button
-                        onClick={() => setIsFormOpen(true)}
-                        className="bg-gradient-to-r from-primary to-[#00bcd4] text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2"
-                    >
-                        <Plus size={20} /> {trans.add_title}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-grow md:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder={language === 'th' ? 'ค้นหาสินค้าหรือหมวดหมู่...' : 'Search products or categories...'}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900 placeholder:text-gray-400"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setIsFormOpen(true)}
+                            className="bg-gradient-to-r from-primary to-[#00bcd4] text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2"
+                        >
+                            <Plus size={20} /> {trans.add_title}
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -248,7 +266,7 @@ export default function AdminProductsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {products.map((p) => (
+                        {filteredProducts.map((p) => (
                             <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="p-4 pl-6">
                                     <div className="flex items-center gap-4">
@@ -291,10 +309,12 @@ export default function AdminProductsPage() {
                                 </td>
                             </tr>
                         ))}
-                        {products.length === 0 && !isLoading && (
+                        {filteredProducts.length === 0 && !isLoading && (
                             <tr>
                                 <td colSpan={4} className="p-12 text-center text-gray-400">
-                                    {language === 'th' ? 'ไม่พบสินค้าในระบบ กด "เพิ่มสินค้าใหม่" เพื่อเริ่มใช้งาน' : 'No products found. Click "Add Product" to start.'}
+                                    {searchTerm
+                                        ? (language === 'th' ? `ไม่พบสิ่งที่คุณค้นหาสำหรับ "${searchTerm}"` : `No results found for "${searchTerm}"`)
+                                        : (language === 'th' ? 'ไม่พบสินค้าในระบบ กด "เพิ่มสินค้าใหม่" เพื่อเริ่มใช้งาน' : 'No products found. Click "Add Product" to start.')}
                                 </td>
                             </tr>
                         )}

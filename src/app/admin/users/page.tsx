@@ -2,7 +2,7 @@
 
 import { createUser, deleteUser, updateUser, getUsers } from "@/actions/admin-actions";
 import { useEffect, useState, useRef } from "react";
-import { Trash2, Plus, Pencil, X, Shield, Lock, Mail, User } from "lucide-react";
+import { Trash2, Plus, Pencil, X, Shield, Lock, Mail, User, Search } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminUsersPage() {
@@ -20,11 +20,17 @@ export default function AdminUsersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
         loadData();
     }, []);
+
+    const filteredUsers = users.filter(u =>
+        u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     async function loadData() {
         const data = await getUsers();
@@ -70,18 +76,30 @@ export default function AdminUsersPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800">{trans.title}</h1>
                     <p className="text-gray-500 mt-1">{trans.subtitle}</p>
                 </div>
                 {!isFormOpen && (
-                    <button
-                        onClick={() => setIsFormOpen(true)}
-                        className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2"
-                    >
-                        <Plus size={20} /> {trans.add_title}
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-grow md:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder={language === 'th' ? 'ค้นหาชื่อหรืออีเมล...' : 'Search name or email...'}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm text-gray-900 placeholder:text-gray-400"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setIsFormOpen(true)}
+                            className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2"
+                        >
+                            <Plus size={20} /> {trans.add_title}
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -179,7 +197,7 @@ export default function AdminUsersPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                        {users.map((user) => (
+                        {filteredUsers.map((user) => (
                             <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                                 <td className="p-4 pl-6">
                                     <div className="flex items-center gap-3">
@@ -220,10 +238,12 @@ export default function AdminUsersPage() {
                                 </td>
                             </tr>
                         ))}
-                        {users.length === 0 && !isLoading && (
+                        {filteredUsers.length === 0 && !isLoading && (
                             <tr>
                                 <td colSpan={4} className="p-12 text-center text-gray-400">
-                                    {trans.no_staff}
+                                    {searchTerm
+                                        ? (language === 'th' ? `ไม่พบทีมงานที่ค้นหาสำหรับ "${searchTerm}"` : `No staff members found for "${searchTerm}"`)
+                                        : trans.no_staff}
                                 </td>
                             </tr>
                         )}
