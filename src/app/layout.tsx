@@ -30,7 +30,6 @@ export const metadata: Metadata = {
 
 import { FloatingContact } from '@/components/layout/FloatingContact';
 
-import CustomCursor from "@/components/ui/CustomCursor";
 import { LanguageProvider } from '@/context/LanguageContext';
 
 export default function RootLayout({
@@ -42,11 +41,8 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body className={`${prompt.className} antialiased`}>
         <Providers>
-          <LanguageProvider>
-            <CustomCursor />
-            {children}
-            <FloatingContact />
-          </LanguageProvider>
+          {children}
+          <FloatingContact />
         </Providers>
       </body>
     </html>
