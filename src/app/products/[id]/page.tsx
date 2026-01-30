@@ -2,28 +2,63 @@
 import React, { use } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { products } from '@/data/mockProducts';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle, Info, ArrowRight } from 'lucide-react';
-import { notFound } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 import { getProduct } from '@/actions/admin-actions';
 
-export default function ProductDetail(props: { params: Promise<{ id: string }> }) {
+export default function ProductDetail({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
     const { t, language } = useLanguage();
-    const params = use(props.params); // Unwrap params with use() since it's a promise in Next 15, or async/await in SC. But this is Client Component now due to hook usage.
+    const params = React.use(paramsPromise);
+    const [product, setProduct] = React.useState<any>(null);
+    const [loading, setLoading] = React.useState(true);
 
-    const product = use(getProduct(params.id));
+    React.useEffect(() => {
+        async function load() {
+            try {
+                const data = await getProduct(params.id);
+                setProduct(data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        load();
+    }, [params.id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white">
+                <Header />
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     if (!product) {
-        notFound();
+        return (
+            <div className="min-h-screen bg-white">
+                <Header />
+                <div className="container-custom pt-32 text-center h-[60vh] flex flex-col items-center justify-center">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-4 font-serif">Product Not Found</h2>
+                    <p className="text-gray-500 mb-8 max-w-md mx-auto">The product you are looking for does not exist or has been removed.</p>
+                    <Link href="/" className="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl transition-all">
+                        Back to Home
+                    </Link>
+                </div>
+                <Footer />
+            </div>
+        );
     }
 
     const title = product.name;
-    const category = product.category?.name || "Uncategorized";
+    const categoryName = product.category?.name || "Uncategorized";
     const details = product.description;
-    // @ts-ignore - benefits exists in DB but maybe Prisma type needs refresh or ignoring for now if lint persists
     const benefits = product.benefits || [];
 
     return (
@@ -52,7 +87,7 @@ export default function ProductDetail(props: { params: Promise<{ id: string }> }
                         {/* Information */}
                         <div className="pt-4">
                             <span className="text-primary font-bold uppercase tracking-wider text-sm bg-blue-50 px-3 py-1 rounded-full">
-                                {category}
+                                {categoryName}
                             </span>
                             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mt-6 mb-8">
                                 {title}
