@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, List, Users, LogOut, Settings, Store } from 'lucide-react';
+import { LayoutDashboard, Package, List, Users, LogOut, Settings, Store, Image as ImageIcon } from 'lucide-react';
 
 export default function AdminLayout({
     children,
@@ -15,6 +15,7 @@ export default function AdminLayout({
         { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
         { icon: Package, label: 'Products', href: '/admin/products' },
         { icon: List, label: 'Categories', href: '/admin/categories' },
+        { icon: ImageIcon, label: 'Banners', href: '/admin/banners' },
         { icon: Users, label: 'Staff Management', href: '/admin/users' },
     ];
 
@@ -39,14 +40,16 @@ export default function AdminLayout({
                 <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
                     <p className="px-4 text-xs font-bold text-white/50 uppercase tracking-widest mb-4 mt-2">Menu</p>
                     {menuItems.map((item) => {
-                        const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                        const isActive = item.href === '/admin'
+                            ? pathname === '/admin'
+                            : pathname === item.href || pathname.startsWith(item.href + '/');
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium ${isActive
-                                        ? 'bg-white text-[#0097a7] shadow-lg translate-x-1'
-                                        : 'text-white/80 hover:bg-white/10 hover:text-white hover:translate-x-1'
+                                    ? 'bg-white text-[#0097a7] shadow-lg translate-x-1'
+                                    : 'text-white/80 hover:bg-white/10 hover:text-white hover:translate-x-1'
                                     }`}
                             >
                                 <item.icon size={20} className={isActive ? "" : "opacity-70"} />

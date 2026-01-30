@@ -2,11 +2,30 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Info } from 'lucide-react';
-import { products } from '@/data/mockProducts';
 import { useLanguage } from '@/context/LanguageContext';
+import { useEffect, useState } from 'react';
+import { getProducts } from '@/actions/admin-actions';
 
 export function FeaturedProducts() {
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
+    const [products, setProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function load() {
+            try {
+                const data = await getProducts();
+                setProducts(data);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        load();
+    }, []);
+
+    if (isLoading) return <div className="py-24 text-center">Loading products...</div>;
 
     return (
         <section className="py-24 bg-white">
@@ -30,14 +49,14 @@ export function FeaturedProducts() {
                         >
                             <div className="aspect-[4/5] relative bg-gray-100 overflow-hidden">
                                 <Image
-                                    src={product.image}
-                                    alt={language === 'th' ? (product.titleTH || product.title) : product.title}
+                                    src={product.image || '/placeholder.png'}
+                                    alt={product.name}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
                                 <div className="absolute top-2 left-2 md:top-4 md:left-4">
                                     <span className="bg-white/90 backdrop-blur text-gray-900 text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-sm">
-                                        {language === 'th' ? (product.categoryTH || product.category) : product.category}
+                                        {product.category?.name || 'Uncategorized'}
                                     </span>
                                 </div>
 
@@ -51,10 +70,10 @@ export function FeaturedProducts() {
 
                             <div className="p-3 md:p-6 mt-auto">
                                 <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                                    {language === 'th' ? (product.titleTH || product.title) : product.title}
+                                    {product.name}
                                 </h3>
                                 <p className="text-gray-500 text-xs md:text-sm line-clamp-2">
-                                    {language === 'th' ? (product.descriptionTH || product.description) : product.description}
+                                    {product.description}
                                 </p>
                                 <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-50 flex items-center text-primary text-xs md:text-sm font-bold gap-1 md:gap-2">
                                     {t.products.read_more} <ArrowRight size={14} className="md:w-4 md:h-4" />

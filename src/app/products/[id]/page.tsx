@@ -8,21 +8,23 @@ import Link from 'next/link';
 import { ArrowLeft, CheckCircle, Info, ArrowRight } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
+import { getProduct } from '@/actions/admin-actions';
 
 export default function ProductDetail(props: { params: Promise<{ id: string }> }) {
     const { t, language } = useLanguage();
     const params = use(props.params); // Unwrap params with use() since it's a promise in Next 15, or async/await in SC. But this is Client Component now due to hook usage.
 
-    const product = products.find((p) => p.id.toString() === params.id);
+    const product = use(getProduct(params.id));
 
     if (!product) {
         notFound();
     }
 
-    const title = language === 'th' && product.titleTH ? product.titleTH : product.title;
-    const category = language === 'th' && product.categoryTH ? product.categoryTH : product.category;
-    const details = language === 'th' && product.detailsTH ? product.detailsTH : product.details;
-    const benefits = language === 'th' && product.benefitsTH ? product.benefitsTH : product.benefits;
+    const title = product.name;
+    const category = product.category?.name || "Uncategorized";
+    const details = product.description;
+    // @ts-ignore - benefits exists in DB but maybe Prisma type needs refresh or ignoring for now if lint persists
+    const benefits = product.benefits || [];
 
     return (
         <div className="min-h-screen bg-white">
@@ -39,7 +41,7 @@ export default function ProductDetail(props: { params: Promise<{ id: string }> }
                         <div className="bg-gray-50 rounded-[3rem] p-8 lg:p-12 relative overflow-hidden">
                             <div className="aspect-square relative rounded-2xl overflow-hidden shadow-2xl bg-white">
                                 <Image
-                                    src={product.image}
+                                    src={product.image || '/placeholder.png'}
                                     alt={title}
                                     fill
                                     className="object-cover"
@@ -58,7 +60,7 @@ export default function ProductDetail(props: { params: Promise<{ id: string }> }
 
                             {/* Key Benefits */}
                             <div className="grid grid-cols-2 gap-4 mb-8">
-                                {benefits?.map((benefit, idx) => (
+                                {benefits?.map((benefit: string, idx: number) => (
                                     <div key={idx} className="flex items-center gap-2 text-gray-700 font-medium">
                                         <CheckCircle size={18} className="text-primary flex-shrink-0" />
                                         <span>{benefit}</span>

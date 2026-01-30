@@ -1,44 +1,41 @@
 "use client";
-import React, { use } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { products } from '@/data/mockProducts';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Info, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { notFound } from 'next/navigation';
+import { getProducts } from '@/actions/admin-actions';
 
 export default function CategoryPage(props: { params: Promise<{ category: string }> }) {
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
     const params = use(props.params);
+    const [products, setProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Map URL slug to internal category names
-    const categoryMap: Record<string, string> = {
-        'medicine': 'Medicine',
-        'supplement': 'Supplement',
-        'energy-series': 'Energy Drink',
-        'sports-gear': 'Sport Equipment',
-    };
-
-    const internalCategory = categoryMap[params.category];
-
-    if (!internalCategory) {
-        notFound();
-    }
-
-    const categoryProducts = products.filter(p => p.category === internalCategory);
-
-    // Get display title for the page header
-    const getPageTitle = () => {
-        switch (params.category) {
-            case 'medicine': return t.nav.categories.medicine;
-            case 'supplement': return t.nav.categories.supplement;
-            case 'energy-series': return t.nav.categories.energy;
-            case 'sports-gear': return t.nav.categories.sport;
-            default: return 'Products';
+    useEffect(() => {
+        async function load() {
+            try {
+                const data = await getProducts();
+                setProducts(data);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setIsLoading(false);
+            }
         }
-    };
+        load();
+    }, []);
+
+    // Filter products by category slug (we need to match the slug from URL to category.slug in DB)
+    // However, DB product has `category: { name, slug }`.
+    // Let's assume `getProducts` includes category.
+    const categoryProducts = products.filter(p => p.category?.slug === params.category || p.category?.name.toLowerCase().replace(/ /g, '-') === params.category);
+
+    const title = categoryProducts.length > 0 ? categoryProducts[0].category.name : params.category.replace(/-/g, ' ').toUpperCase();
+
+    if (isLoading) return <div className="min-h-screen bg-white"><Header /><div className="pt-32 text-center">Loading...</div></div>;
 
     return (
         <div className="min-h-screen bg-white">
@@ -50,8 +47,8 @@ export default function CategoryPage(props: { params: Promise<{ category: string
                         <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-8 font-medium transition-colors hover:translate-x-[-4px]">
                             <ArrowLeft size={20} /> Back to Home
                         </Link>
-                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{getPageTitle()}</h1>
-                        <p className="text-gray-500 text-lg">Discover our premium range of {getPageTitle()}</p>
+                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 capitalize">{title}</h1>
+                        <p className="text-gray-500 text-lg">Discover our premium range of {title}</p>
                     </div>
 
                     {categoryProducts.length === 0 ? (
@@ -68,14 +65,14 @@ export default function CategoryPage(props: { params: Promise<{ category: string
                                 >
                                     <div className="aspect-[4/5] relative bg-gray-100 overflow-hidden">
                                         <Image
-                                            src={product.image}
-                                            alt={language === 'th' ? (product.titleTH || product.title) : product.title}
+                                            src={product.image || '/placeholder.png'}
+                                            alt={product.name}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-700"
                                         />
                                         <div className="absolute top-2 left-2 md:top-4 md:left-4">
                                             <span className="bg-white/90 backdrop-blur text-gray-900 text-[10px] md:text-xs font-bold px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-sm">
-                                                {language === 'th' ? (product.categoryTH || product.category) : product.category}
+                                                {product.category?.name || 'Uncategorized'}
                                             </span>
                                         </div>
 
@@ -88,10 +85,10 @@ export default function CategoryPage(props: { params: Promise<{ category: string
 
                                     <div className="p-3 md:p-6 mt-auto">
                                         <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                                            {language === 'th' ? (product.titleTH || product.title) : product.title}
+                                            {product.name}
                                         </h3>
                                         <p className="text-gray-500 text-xs md:text-sm line-clamp-2">
-                                            {language === 'th' ? (product.descriptionTH || product.description) : product.description}
+                                            {product.description}
                                         </p>
                                         <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-50 flex items-center text-primary text-xs md:text-sm font-bold gap-1 md:gap-2">
                                             {t.products.read_more} <ArrowRight size={14} className="md:w-4 md:h-4" />

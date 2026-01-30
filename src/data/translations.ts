@@ -19,7 +19,7 @@ export const translations = {
             title_line2: "Better Living",
             subtitle: "Discover our range of premium healthcare products, pharmaceuticals, and supplements designed for your well-being.",
             btn_discover: "Discover Products",
-            btn_about: "About Company",
+            btn_about: "Company Story",
             badges: {
                 effective: "Effective",
                 certified: "Certified",
@@ -179,8 +179,8 @@ export const translations = {
             title_line1: "นวัตกรรมเพื่อ",
             title_line2: "คุณภาพชีวิตที่ดีกว่า",
             subtitle: "ค้นพบผลิตภัณฑ์ดูแลสุขภาพ ยา และอาหารเสริมเกรดพรีเมียมที่ออกแบบมาเพื่อความเป็นอยู่ที่ดีของคุณ",
-            btn_discover: "ดูสินค้าทั้งหมด",
-            btn_about: "เกี่ยวกับบริษัท",
+            btn_discover: "Discover Products",
+            btn_about: "Company Story",
             badges: {
                 effective: "เห็นผลจริง",
                 certified: "มีใบรับรอง",

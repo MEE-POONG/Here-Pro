@@ -1,8 +1,8 @@
 "use client";
 
-import { createUser, deleteUser, getUsers } from "@/actions/admin-actions";
+import { createUser, deleteUser, updateUser, getUsers } from "@/actions/admin-actions";
 import { useEffect, useState, useRef } from "react";
-import { Trash2, UserPlus, Shield } from "lucide-react";
+import { Trash2, Plus, Pencil, X, Shield, Lock, Mail, User } from "lucide-react";
 
 export default function AdminUsersPage() {
     type User = {
@@ -14,6 +14,8 @@ export default function AdminUsersPage() {
 
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
@@ -26,11 +28,23 @@ export default function AdminUsersPage() {
         setIsLoading(false);
     }
 
-    async function handleCreate(formData: FormData) {
+    async function handleSubmit(formData: FormData) {
         setIsLoading(true);
-        await createUser(formData);
-        if (formRef.current) formRef.current.reset();
-        await loadData();
+        try {
+            if (editingUser) {
+                await updateUser(editingUser.id, formData);
+            } else {
+                await createUser(formData);
+            }
+            if (formRef.current) formRef.current.reset();
+            await loadData();
+            closeForm();
+        } catch (error) {
+            alert("Error saving user");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     async function handleDelete(id: string) {
@@ -40,6 +54,16 @@ export default function AdminUsersPage() {
         await loadData();
     }
 
+    function openEdit(user: User) {
+        setEditingUser(user);
+        setIsFormOpen(true);
+    }
+
+    function closeForm() {
+        setIsFormOpen(false);
+        setEditingUser(null);
+    }
+
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-end">
@@ -47,77 +71,160 @@ export default function AdminUsersPage() {
                     <h1 className="text-3xl font-bold text-gray-800">Staff Management</h1>
                     <p className="text-gray-500 mt-1">Manage admin access and roles</p>
                 </div>
+                {!isFormOpen && (
+                    <button
+                        onClick={() => setIsFormOpen(true)}
+                        className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2"
+                    >
+                        <Plus size={20} /> Add New Staff
+                    </button>
+                )}
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
-                {/* User List */}
-                <div className="lg:col-span-2 grid gap-4">
-                    {users.map((user) => (
-                        <div key={user.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow">
-                            <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 p-1">
-                                    <div className="w-full h-full bg-white rounded-full flex items-center justify-center text-xl">
-                                        {user.name ? user.name[0] : 'U'}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-lg">{user.name || 'Unnamed Staff'}</h3>
-                                    <p className="text-gray-500 text-sm">{user.email}</p>
-                                    <span className="inline-flex items-center gap-1 mt-1 text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                        <Shield size={10} /> {user.role}
-                                    </span>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => handleDelete(user.id)}
-                                className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-3 rounded-xl transition-all"
-                                title="Remove Staff"
-                            >
-                                <Trash2 size={20} />
-                            </button>
-                        </div>
-                    ))}
-                    {users.length === 0 && !isLoading && (
-                        <div className="text-center p-10 text-gray-400 bg-white rounded-2xl border border-dashed border-gray-300">
-                            No staff members found.
-                        </div>
-                    )}
-                </div>
-
-                {/* Create Form */}
-                <div className="lg:col-span-1">
-                    <form ref={formRef} action={handleCreate} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
-                        <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
-                            <UserPlus size={24} className="text-primary" />
-                            New Staff Member
-                        </h3>
+            {/* Create/Edit Form (Expandable) */}
+            {isFormOpen && (
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 animate-fade-in-up mb-8 relative">
+                    <button onClick={closeForm} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                        <X size={24} />
+                    </button>
+                    <h3 className="font-bold text-gray-900 mb-6 pb-2 border-b border-gray-100 flex items-center gap-2">
+                        {editingUser ? <Pencil size={20} /> : <Plus size={20} />}
+                        {editingUser ? 'Edit Staff Member' : 'Add New Staff Member'}
+                    </h3>
+                    <form ref={formRef} action={handleSubmit} className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                                <input name="name" required placeholder="John Doe" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-gray-900 placeholder:text-gray-400" />
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        name="name"
+                                        required
+                                        defaultValue={editingUser?.name || ''}
+                                        placeholder="John Doe"
+                                        className="w-full pl-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-800 outline-none text-gray-900 placeholder:text-gray-400 transition-all"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-                                <input name="email" type="email" required placeholder="staff@here-pro.com" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-gray-900 placeholder:text-gray-400" />
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        name="email"
+                                        type="email"
+                                        required
+                                        defaultValue={editingUser?.email}
+                                        placeholder="staff@here-pro.com"
+                                        className="w-full pl-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-800 outline-none text-gray-900 placeholder:text-gray-400 transition-all"
+                                    />
+                                </div>
                             </div>
+                        </div>
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
-                                <input name="password" type="password" required placeholder="••••••••" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-gray-900 placeholder:text-gray-400" />
+                                <label className="block text-sm font-bold text-gray-700 mb-1">
+                                    {editingUser ? 'New Password (Optional)' : 'Password'}
+                                </label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        name="password"
+                                        type="password"
+                                        required={!editingUser}
+                                        placeholder={editingUser ? "Leave blank to keep current" : "••••••••"}
+                                        className="w-full pl-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-800 outline-none text-gray-900 placeholder:text-gray-400 transition-all"
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Role</label>
-                                <select name="role" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-gray-900">
-                                    <option value="ADMIN">Administrator</option>
-                                    <option value="EDITOR">Editor</option>
-                                    <option value="VIEWER">Viewer</option>
-                                </select>
+                                <div className="relative">
+                                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <select
+                                        name="role"
+                                        defaultValue={editingUser?.role || 'ADMIN'}
+                                        className="w-full pl-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-800 outline-none text-gray-900 appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="ADMIN">Administrator</option>
+                                        <option value="EDITOR">Editor</option>
+                                        <option value="VIEWER">Viewer</option>
+                                    </select>
+                                </div>
                             </div>
-                            <button type="submit" disabled={isLoading} className="w-full py-4 mt-2 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition-all disabled:opacity-70">
-                                {isLoading ? 'Creating...' : 'Create Account'}
+                        </div>
+                        <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-gray-100 mt-2">
+                            <button type="button" onClick={closeForm} className="px-6 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
+                            <button type="submit" className="px-8 py-3 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition-transform active:scale-95">
+                                {editingUser ? 'Update Staff' : 'Create Account'}
                             </button>
                         </div>
                     </form>
                 </div>
+            )}
+
+            {/* List */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                            <th className="p-4 font-bold text-gray-700 pl-6">Name</th>
+                            <th className="p-4 font-bold text-gray-700">Email</th>
+                            <th className="p-4 font-bold text-gray-700">Role</th>
+                            <th className="p-4 font-bold text-gray-700 text-right pr-6">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                        {users.map((user) => (
+                            <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="p-4 pl-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 p-[2px]">
+                                            <div className="w-full h-full bg-white rounded-full flex items-center justify-center font-bold text-gray-600 text-sm">
+                                                {user.name ? user.name[0].toUpperCase() : 'U'}
+                                            </div>
+                                        </div>
+                                        <span className="font-bold text-gray-900">{user.name || 'Unnamed Staff'}</span>
+                                    </div>
+                                </td>
+                                <td className="p-4 text-gray-600">{user.email}</td>
+                                <td className="p-4">
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user.role === 'ADMIN' ? 'bg-purple-50 text-purple-700' :
+                                            user.role === 'EDITOR' ? 'bg-blue-50 text-blue-700' :
+                                                'bg-gray-100 text-gray-600'
+                                        }`}>
+                                        <Shield size={12} /> {user.role}
+                                    </span>
+                                </td>
+                                <td className="p-4 text-right pr-6">
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            onClick={() => openEdit(user)}
+                                            className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-all"
+                                            title="Edit"
+                                        >
+                                            <Pencil size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(user.id)}
+                                            className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all"
+                                            title="Remove"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                        {users.length === 0 && !isLoading && (
+                            <tr>
+                                <td colSpan={4} className="p-12 text-center text-gray-400">
+                                    No staff members found. Click "Add New Staff" to start.
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

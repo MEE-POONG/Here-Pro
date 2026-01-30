@@ -15,6 +15,7 @@ export default function AdminProductsPage() {
         image: string | null;
         description: string;
         featured: boolean;
+        benefits: string[];
     };
 
     type Category = { id: string; name: string };
@@ -24,6 +25,7 @@ export default function AdminProductsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
@@ -38,6 +40,10 @@ export default function AdminProductsPage() {
     }
 
     async function handleSubmit(formData: FormData) {
+        if (!confirm("Are you sure you want to save this product?")) {
+            return;
+        }
+
         setIsLoading(true);
         try {
             if (editingProduct) {
@@ -49,6 +55,8 @@ export default function AdminProductsPage() {
             await loadData();
             setIsFormOpen(false);
             setEditingProduct(null);
+            setPreviewImage(null);
+            alert("Product saved successfully!");
         } catch (error) {
             alert("Error saving product");
             console.error(error);
@@ -74,6 +82,7 @@ export default function AdminProductsPage() {
     function closeForm() {
         setIsFormOpen(false);
         setEditingProduct(null);
+        setPreviewImage(null);
     }
 
     return (
@@ -144,27 +153,55 @@ export default function AdminProductsPage() {
                                     </div>
                                 )}
                             </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Key Benefits</label>
+                                <textarea
+                                    name="benefits"
+                                    rows={4}
+                                    defaultValue={editingProduct?.benefits?.join('\n')}
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400"
+                                    placeholder={`- Joint Pain Relief\n- Improved Mobility\n- Anti-inflammatory`}
+                                ></textarea>
+                                <p className="text-xs text-gray-500 mt-1">Enter each benefit on a new line.</p>
+                            </div>
                         </div>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Product Image</label>
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 text-center hover:bg-gray-100 transition-colors cursor-pointer relative">
+                                <div className="border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-center hover:bg-gray-100 transition-colors cursor-pointer relative overflow-hidden h-48 flex items-center justify-center group">
                                     <input
                                         type="file"
                                         name="image"
                                         accept="image/*"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const url = URL.createObjectURL(file);
+                                                setPreviewImage(url);
+                                            }
+                                        }}
                                     />
-                                    <div className="flex flex-col items-center gap-2 text-gray-500 py-2">
-                                        <ImageIcon size={32} />
-                                        <span className="text-sm font-medium">Click to upload image</span>
-                                    </div>
+
+                                    {(previewImage || editingProduct?.image) ? (
+                                        <div className="absolute inset-0 w-full h-full">
+                                            <img
+                                                src={previewImage || editingProduct?.image || ''}
+                                                className="w-full h-full object-contain p-2"
+                                                alt="Preview"
+                                            />
+                                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                                                <ImageIcon size={32} className="mb-2" />
+                                                <span className="text-sm font-medium">Click to change image</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-2 text-gray-500 py-2">
+                                            <ImageIcon size={32} />
+                                            <span className="text-sm font-medium">Click to upload image</span>
+                                        </div>
+                                    )}
                                 </div>
-                                {editingProduct?.image && (
-                                    <div className="mt-2 text-xs text-gray-500 flex items-center gap-2">
-                                        Current: <a href={editingProduct.image} target="_blank" className="text-primary underline truncate max-w-[200px]">{editingProduct.image}</a>
-                                    </div>
-                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>

@@ -30,24 +30,53 @@ const SLIDES = [
     }
 ];
 
+import { getBanners } from '@/actions/admin-actions'; // Add import
+
+// ...
+
 export function Hero() {
     const { t, language } = useLanguage();
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [slides, setSlides] = useState<any[]>(SLIDES); // Use state for slides
+
+    useEffect(() => {
+        async function loadBanners() {
+            try {
+                const data = await getBanners();
+                if (data && data.length > 0) {
+                    // Filter active and map to shape
+                    const activeBanners = data.filter((b: any) => b.active).map((b: any) => ({
+                        id: b.id,
+                        image: b.image,
+                        title: { en: b.title, th: b.title },
+                        subtitle: { en: b.subtitle || '', th: b.subtitle || '' },
+                        badge: { en: b.badge || '', th: b.badge || '' }
+                    }));
+                    if (activeBanners.length > 0) {
+                        setSlides(activeBanners);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load banners", e);
+            }
+        }
+        loadBanners();
+    }, []);
 
     // Auto-slide effect
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-        }, 5000); // 5 seconds
+            setCurrentSlide((prev) => (prev + 1) % slides.length); // Use slides.length
+        }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [slides]); // Add dependency
 
     const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
     };
 
     const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     };
 
     return (
@@ -102,9 +131,9 @@ export function Hero() {
                     {/* Right: Product Carousel - Stacked Cards */}
                     <div className="relative h-[550px] flex items-center justify-center animate-fade-in-up delay-200 lg:-mr-12 perspective-1000">
                         <div className="relative w-full max-w-md h-full flex items-center justify-center">
-                            {SLIDES.map((slide, index) => {
+                            {slides.map((slide, index) => {
                                 // Calculate position relative to current slide
-                                const length = SLIDES.length;
+                                const length = slides.length;
                                 const offset = (index - currentSlide + length) % length;
 
                                 // Determine styles based on position
@@ -168,7 +197,7 @@ export function Hero() {
 
                         {/* Pagination Indicators */}
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-40">
-                            {SLIDES.map((_, idx) => (
+                            {slides.map((_, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentSlide(idx)}

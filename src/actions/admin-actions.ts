@@ -20,6 +20,22 @@ export async function getProducts() {
     }
 }
 
+export async function getProduct(id: string) {
+    try {
+        const product = await db.product.findUnique({
+            where: { id },
+            include: { category: true },
+        });
+        if (!product) return null;
+        return {
+            ...product,
+            price: Number(product.price)
+        };
+    } catch {
+        return null;
+    }
+}
+
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 
@@ -48,6 +64,7 @@ export async function createProduct(formData: FormData) {
     const price = parseFloat(formData.get("price") as string);
     const categoryId = formData.get("categoryId") as string;
     const featured = formData.get("featured") === "on";
+    const benefits = (formData.get("benefits") as string || "").split('\n').filter(b => b.trim() !== "");
 
     const imageFile = formData.get("image") as File;
     let imagePath = "";
@@ -70,6 +87,7 @@ export async function createProduct(formData: FormData) {
             price,
             image: imagePath,
             featured,
+            benefits,
             category: {
                 connect: { id: categoryId }
             }
@@ -84,6 +102,7 @@ export async function updateProduct(id: string, formData: FormData) {
     const price = parseFloat(formData.get("price") as string);
     const categoryId = formData.get("categoryId") as string;
     const featured = formData.get("featured") === "on";
+    const benefits = (formData.get("benefits") as string || "").split('\n').filter(b => b.trim() !== "");
 
     const imageFile = formData.get("image") as File;
     let imagePath = undefined;
@@ -100,6 +119,7 @@ export async function updateProduct(id: string, formData: FormData) {
             price,
             ...(imagePath && { image: imagePath }), // Only update image if new one provided
             featured,
+            benefits,
             categoryId // Direct update works fine too, but let's be consistent if we want
         }
     });
@@ -109,6 +129,72 @@ export async function updateProduct(id: string, formData: FormData) {
 export async function deleteProduct(id: string) {
     await db.product.delete({ where: { id } });
     revalidatePath('/admin/products');
+}
+
+// --- Banners ---
+export async function getBanners() {
+    try {
+        return await db.banner.findMany({ orderBy: { order: 'asc' } });
+    } catch {
+        return [];
+    }
+}
+
+export async function createBanner(formData: FormData) {
+    const title = formData.get("title") as string;
+    const subtitle = formData.get("subtitle") as string;
+    const badge = formData.get("badge") as string;
+    const active = formData.get("active") === "on";
+
+    const imageFile = formData.get("image") as File;
+    let imagePath = "";
+
+    if (imageFile && imageFile.size > 0) {
+        imagePath = await saveFile(imageFile);
+    }
+
+    // Get max order to append
+    const lastBanner = await db.banner.findFirst({ orderBy: { order: 'desc' } });
+    const order = (lastBanner?.order ?? 0) + 1;
+
+    await db.banner.create({
+        data: { title, subtitle, badge, image: imagePath, active, order }
+    });
+    revalidatePath('/');
+    revalidatePath('/admin/banners');
+}
+
+export async function updateBanner(id: string, formData: FormData) {
+    const title = formData.get("title") as string;
+    const subtitle = formData.get("subtitle") as string;
+    const badge = formData.get("badge") as string;
+    const active = formData.get("active") === "on";
+
+    const imageFile = formData.get("image") as File;
+    let imagePath = undefined;
+
+    if (imageFile && imageFile.size > 0) {
+        imagePath = await saveFile(imageFile);
+    }
+
+    await db.banner.update({
+        where: { id },
+        data: {
+            title,
+            subtitle,
+            badge,
+            ...(imagePath && { image: imagePath }),
+            active
+        }
+    });
+    revalidatePath('/');
+    revalidatePath('/admin/banners');
+}
+
+export async function deleteBanner(id: string) {
+    await db.banner.delete({ where: { id } });
+    revalidatePath('/');
+    revalidatePath('/admin/banners');
 }
 
 // --- Categories ---
@@ -153,6 +239,24 @@ export async function createUser(formData: FormData) {
 
     await db.user.create({
         data: { name, email, password, role }
+    });
+    revalidatePath('/admin/users');
+}
+
+export async function updateUser(id: string, formData: FormData) {
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const role = formData.get("role") as string;
+
+    const data: any = { name, email, role };
+    if (password && password.trim() !== "") {
+        data.password = password; // Should hash in production
+    }
+
+    await db.user.update({
+        where: { id },
+        data
     });
     revalidatePath('/admin/users');
 }

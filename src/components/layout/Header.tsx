@@ -2,13 +2,27 @@
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Menu, X } from 'lucide-react'; // Added Menu, X
+import { ChevronDown, Menu, X } from 'lucide-react';
+import { getCategories } from '@/actions/admin-actions';
 
 export function Header() {
   const { language, setLanguage, t } = useLanguage();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // New state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function loadCats() {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    loadCats();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -80,18 +94,19 @@ export function Header() {
                 onMouseLeave={() => setIsDropdownOpen(false)}
               >
                 <div className="flex flex-col py-2">
-                  <Link href="/categories/medicine" className="px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors text-left flex items-center justify-between group/item">
-                    {t.nav.categories.medicine}
-                  </Link>
-                  <Link href="/categories/supplement" className="px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors text-left flex items-center justify-between group/item">
-                    {t.nav.categories.supplement}
-                  </Link>
-                  <Link href="/categories/energy-series" className="px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors text-left flex items-center justify-between group/item">
-                    {t.nav.categories.energy}
-                  </Link>
-                  <Link href="/categories/sports-gear" className="px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors text-left flex items-center justify-between group/item">
-                    {t.nav.categories.sport}
-                  </Link>
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/categories/${cat.slug}`}
+                        className="px-6 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary transition-colors text-left flex items-center justify-between group/item"
+                      >
+                        {cat.name}
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="px-6 py-3 text-gray-400 text-sm">Loading...</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -139,10 +154,16 @@ export function Header() {
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/20 pb-4">{t.nav.home}</Link>
           <div className="flex flex-col gap-4 border-b border-white/20 pb-4">
             <span className="opacity-80 text-sm uppercase tracking-wider">{t.nav.products}</span>
-            <Link href="/categories/medicine" onClick={() => setIsMobileMenuOpen(false)} className="pl-4 text-lg font-medium">{t.nav.categories.medicine}</Link>
-            <Link href="/categories/supplement" onClick={() => setIsMobileMenuOpen(false)} className="pl-4 text-lg font-medium">{t.nav.categories.supplement}</Link>
-            <Link href="/categories/energy-series" onClick={() => setIsMobileMenuOpen(false)} className="pl-4 text-lg font-medium">{t.nav.categories.energy}</Link>
-            <Link href="/categories/sports-gear" onClick={() => setIsMobileMenuOpen(false)} className="pl-4 text-lg font-medium">{t.nav.categories.sport}</Link>
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/categories/${cat.slug}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="pl-4 text-lg font-medium"
+              >
+                {cat.name}
+              </Link>
+            ))}
           </div>
           <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/20 pb-4">{t.nav.about}</Link>
           <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/20 pb-4">{t.nav.contact}</Link>
