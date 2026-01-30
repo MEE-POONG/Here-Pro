@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, List, Users, LogOut, Settings, Store, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, Package, List, Users, LogOut, Settings, Store, Image as ImageIcon, Mail, Bell } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useState, useEffect } from 'react';
+import { getStats } from '@/actions/admin-actions';
 
 export default function AdminLayout({
     children,
@@ -12,6 +14,20 @@ export default function AdminLayout({
 }) {
     const pathname = usePathname();
     const { t, language, setLanguage } = useLanguage();
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const data = await getStats();
+                setUnreadCount(data.unreadCount || 0);
+            } catch (e) { }
+        }
+        fetchStats();
+        // Refresh periodically
+        const interval = setInterval(fetchStats, 60000);
+        return () => clearInterval(interval);
+    }, [pathname]);
 
     const menuItems = [
         { icon: LayoutDashboard, label: t.admin.dashboard, href: '/admin' },
@@ -19,6 +35,7 @@ export default function AdminLayout({
         { icon: List, label: t.admin.categories, href: '/admin/categories' },
         { icon: ImageIcon, label: t.admin.banners, href: '/admin/banners' },
         { icon: Users, label: t.admin.staff, href: '/admin/users' },
+        { icon: Mail, label: t.admin.messages, href: '/admin/messages', badge: unreadCount },
     ];
 
     const getPageTitle = () => {
@@ -31,6 +48,7 @@ export default function AdminLayout({
             case 'categories': return t.admin.categories;
             case 'banners': return t.admin.banners;
             case 'users': return t.admin.staff;
+            case 'messages': return t.admin.messages;
             default: return lastPart.replace('-', ' ');
         }
     };
@@ -63,13 +81,20 @@ export default function AdminLayout({
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-medium ${isActive
+                                className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all font-medium ${isActive
                                     ? 'bg-white text-[#0097a7] shadow-lg translate-x-1'
                                     : 'text-white/80 hover:bg-white/10 hover:text-white hover:translate-x-1'
                                     }`}
                             >
-                                <item.icon size={20} className={isActive ? "" : "opacity-70"} />
-                                {item.label}
+                                <div className="flex items-center gap-3">
+                                    <item.icon size={20} className={isActive ? "" : "opacity-70"} />
+                                    {item.label}
+                                </div>
+                                {item.badge !== undefined && item.badge > 0 && (
+                                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                        {item.badge}
+                                    </span>
+                                )}
                             </Link>
                         );
                     })}
@@ -144,7 +169,34 @@ export default function AdminLayout({
                 <div className="p-8 max-w-7xl mx-auto">
                     {children}
                 </div>
+
+                {/* Floating Notification Bell */}
+                <Link
+                    href="/admin/messages"
+                    className="fixed bottom-8 right-8 w-14 h-14 bg-white rounded-full shadow-2xl flex items-center justify-center text-[#00bcd4] hover:scale-110 active:scale-95 transition-all border border-gray-100 group z-50"
+                >
+                    <Bell size={28} className="group-hover:animate-ring" />
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white animate-bounce">
+                            {unreadCount}
+                        </span>
+                    )}
+                </Link>
             </main>
+            <style jsx global>{`
+                @keyframes ring {
+                    0% { transform: rotate(0); }
+                    10% { transform: rotate(15deg); }
+                    20% { transform: rotate(-10deg); }
+                    30% { transform: rotate(5deg); }
+                    40% { transform: rotate(-5deg); }
+                    50% { transform: rotate(0); }
+                    100% { transform: rotate(0); }
+                }
+                .animate-ring {
+                    animation: ring 1s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 }

@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function InfiniteMarquee() {
+    const { language } = useLanguage();
     return (
         <div className="relative w-full overflow-hidden bg-primary py-4">
             {/* Gradient Overlay for fade effect */}
@@ -12,13 +14,13 @@ export function InfiniteMarquee() {
                 {/* Repeater items - enough to cover screen */}
                 {[...Array(4)].map((_, i) => (
                     <div key={i} className="flex items-center mx-4 text-white font-bold text-lg tracking-widest uppercase gap-8">
-                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> Premium Quality</span>
+                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> {language === 'th' ? 'คุณภาพระดับพรีเมียม' : 'Premium Quality'}</span>
                         <span className="text-white/40">•</span>
-                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> Certified Standard</span>
+                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> {language === 'th' ? 'มาตรฐานที่ได้รับรอง' : 'Certified Standard'}</span>
                         <span className="text-white/40">•</span>
-                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> 100% Organic Ingredients</span>
+                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> {language === 'th' ? 'สารสกัดจากธรรมชาติ 100%' : '100% Natural Ingredients'}</span>
                         <span className="text-white/40">•</span>
-                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> Fast Delivery</span>
+                        <span className="flex items-center gap-2"><span className="w-2 h-2 bg-white rounded-full"></span> {language === 'th' ? 'จัดส่งรวดเร็ว' : 'Fast Delivery'}</span>
                         <span className="text-white/40">•</span>
                     </div>
                 ))}

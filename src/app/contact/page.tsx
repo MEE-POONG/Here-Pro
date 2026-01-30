@@ -5,9 +5,10 @@ import { Footer } from '@/components/layout/Footer';
 import { Phone, MapPin, Mail, Clock, Facebook, Instagram, Twitter, Youtube, Send, ExternalLink } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import Image from 'next/image';
+import { createContactMessage } from '@/actions/admin-actions';
 
 export default function ContactPage() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     return (
         <div className="min-h-screen bg-white">
@@ -164,28 +165,41 @@ export default function ContactPage() {
                             {/* Right: Form */}
                             <div className="md:w-7/12 p-8 md:p-14">
                                 <h3 className="text-2xl font-bold text-gray-900 mb-8">{t.contact.form.title}</h3>
-                                <form className="space-y-6">
+                                <form
+                                    action={async (formData) => {
+                                        try {
+                                            const res = await createContactMessage(formData);
+                                            alert(language === 'th' ? "ส่งข้อความเรียบร้อยแล้ว!" : "Message sent successfully!");
+                                            (document.getElementById('contact-form') as HTMLFormElement).reset();
+                                        } catch (e: any) {
+                                            console.error("Form Error:", e);
+                                            alert((language === 'th' ? "เกิดข้อผิดพลาด: " : "An error occurred: ") + (e.message || "Unknown error"));
+                                        }
+                                    }}
+                                    id="contact-form"
+                                    className="space-y-6"
+                                >
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-gray-700">{t.contact.form.name}</label>
-                                        <input type="text" className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                                        <input name="name" type="text" required className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-900 font-medium" />
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-sm font-bold text-gray-700">{t.contact.form.email}</label>
-                                            <input type="email" className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                                            <input name="email" type="email" required className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-900 font-medium" />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-sm font-bold text-gray-700">{t.contact.form.phone}</label>
-                                            <input type="tel" className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                                            <input name="phone" type="tel" className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-900 font-medium" />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-gray-700">{t.contact.form.subject}</label>
-                                        <input type="text" className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                                        <input name="subject" type="text" className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-900 font-medium" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-gray-700">{t.contact.form.message}</label>
-                                        <textarea rows={4} className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"></textarea>
+                                        <textarea name="message" required rows={4} className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-gray-900 font-medium"></textarea>
                                     </div>
 
                                     <button type="submit" className="bg-primary text-white font-bold py-4 px-8 rounded-lg hover:bg-primary-dark transition-all w-full md:w-auto min-w-[160px] shadow-lg shadow-primary/30 flex items-center justify-center gap-2">

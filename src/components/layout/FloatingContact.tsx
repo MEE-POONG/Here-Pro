@@ -2,8 +2,15 @@
 import React, { useState } from 'react';
 import { MessageSquareText, Phone, X, MessageSquare } from 'lucide-react';
 
+import { usePathname } from 'next/navigation';
+
 export function FloatingContact() {
     const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
+
+    if (pathname?.startsWith('/admin')) {
+        return null;
+    }
 
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">

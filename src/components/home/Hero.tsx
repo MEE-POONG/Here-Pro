@@ -5,15 +5,7 @@ import { ArrowRight, Zap, ShieldCheck, Star, ChevronLeft, ChevronRight } from 'l
 import { useLanguage } from '@/context/LanguageContext';
 import { useState, useEffect } from 'react';
 
-const FALLBACK_SLIDE = {
-    id: 'placeholder',
-    image: "/1356cdcaefe2356df18e5ba31f088507.jpg_720x720q80.jpg",
-    title: { en: "Your Brand Story", th: "เรื่องราวแบรนด์ของคุณ" },
-    subtitle: { en: "Premium Healthcare Manufacturer", th: "ผู้ผลิตสินค้าเพื่อสุขภาพระดับพรีเมียม" },
-    badge: { en: "Established 2026", th: "ก่อตั้งเมื่อปี 2569" }
-};
-
-import { getBanners } from '@/actions/admin-actions'; // Add import
+import { getBanners, getProducts } from '@/actions/admin-actions';
 
 export function Hero() {
     const { t, language } = useLanguage();
@@ -22,42 +14,71 @@ export function Hero() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        async function loadBanners() {
+        async function loadContent() {
             try {
-                const data = await getBanners();
-                if (data && data.length > 0) {
-                    const activeBanners = data.filter((b: any) => b.active).map((b: any) => ({
+                // 1. Try to load active banners
+                const bannerData = await getBanners();
+                const activeBanners = bannerData.filter((b: any) => b.active).map((b: any) => {
+                    const titleParts = b.title.split('|');
+                    const subtitleParts = (b.subtitle || '').split('|');
+                    const badgeParts = (b.badge || '').split('|');
+
+                    return {
                         id: b.id,
                         image: b.image,
-                        title: { en: b.title, th: b.title },
-                        subtitle: { en: b.subtitle || '', th: b.subtitle || '' },
-                        badge: { en: b.badge || '', th: b.badge || '' }
-                    }));
-                    if (activeBanners.length > 0) {
-                        setSlides(activeBanners);
-                    } else {
-                        setSlides([FALLBACK_SLIDE]);
-                    }
+                        title: {
+                            en: titleParts[0]?.trim() || b.title,
+                            th: titleParts[1]?.trim() || titleParts[0]?.trim() || b.title
+                        },
+                        subtitle: {
+                            en: subtitleParts[0]?.trim() || b.subtitle || '',
+                            th: subtitleParts[1]?.trim() || subtitleParts[0]?.trim() || b.subtitle || ''
+                        },
+                        badge: {
+                            en: badgeParts[0]?.trim() || b.badge || '',
+                            th: badgeParts[1]?.trim() || badgeParts[0]?.trim() || b.badge || ''
+                        }
+                    };
+                });
+
+                if (activeBanners.length > 0) {
+                    setSlides(activeBanners);
                 } else {
-                    setSlides([FALLBACK_SLIDE]);
+                    // 2. Fallback: Try to load featured products if no banners
+                    const productData = await getProducts();
+                    const featured = productData.filter((p: any) => p.featured).map((p: any) => ({
+                        id: p.id,
+                        image: p.image,
+                        title: { en: p.name, th: p.name },
+                        subtitle: {
+                            en: t.hero.product_card.subtitle,
+                            th: t.hero.product_card.subtitle
+                        },
+                        badge: {
+                            en: t.hero.badges.premium,
+                            th: t.hero.badges.premium
+                        }
+                    }));
+                    setSlides(featured);
                 }
             } catch (e) {
-                console.error("Failed to load banners", e);
-                setSlides([FALLBACK_SLIDE]);
+                console.error("Failed to load hero content", e);
+                setSlides([]);
             } finally {
                 setIsLoading(false);
             }
         }
-        loadBanners();
-    }, []);
+        loadContent();
+    }, [language, t.hero.product_card.subtitle, t.hero.badges.premium]);
 
     // Auto-slide effect
     useEffect(() => {
+        if (slides.length <= 1) return;
         const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length); // Use slides.length
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, [slides]); // Add dependency
+    }, [slides]);
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -117,83 +138,87 @@ export function Hero() {
                     </div>
 
                     {/* Right: Product Carousel - Stacked Cards */}
-                    <div className="relative h-[550px] flex items-center justify-center animate-fade-in-up delay-200 lg:-mr-12 perspective-1000">
-                        <div className="relative w-full max-w-md h-full flex items-center justify-center">
-                            {slides.map((slide, index) => {
-                                // Calculate position relative to current slide
-                                const length = slides.length;
-                                const offset = (index - currentSlide + length) % length;
+                    {slides.length > 0 && (
+                        <div className="relative h-[550px] flex items-center justify-center animate-fade-in-up delay-200 lg:-mr-12 perspective-1000">
+                            <div className="relative w-full max-w-md h-full flex items-center justify-center">
+                                {slides.map((slide, index) => {
+                                    // Calculate position relative to current slide
+                                    const length = slides.length;
+                                    const offset = (index - currentSlide + length) % length;
 
-                                // Determine styles based on position
-                                let cardStyle = "absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.8,0.25,1)] origin-bottom";
-                                let contentStyle = "opacity-100";
+                                    // Determine styles based on position
+                                    let cardStyle = "absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.8,0.25,1)] origin-bottom";
+                                    let contentStyle = "opacity-100";
 
-                                if (offset === 0) {
-                                    // Active Card (Front)
-                                    cardStyle += " z-30 scale-100 translate-y-0 rotate-0 opacity-100 hover:scale-105 hover:-translate-y-2";
-                                } else if (offset === 1) {
-                                    // Next Card (Behind Right)
-                                    cardStyle += " z-20 scale-90 translate-x-12 translate-y-4 rotate-6 opacity-60 cursor-pointer hover:opacity-80 hover:rotate-12";
-                                } else if (offset === length - 1) {
-                                    // Prev Card (Behind Left)
-                                    cardStyle += " z-10 scale-90 -translate-x-12 translate-y-4 -rotate-6 opacity-60 cursor-pointer hover:opacity-80 hover:-rotate-12";
-                                } else {
-                                    // Hidden others
-                                    cardStyle += " z-0 scale-50 opacity-0 pointer-events-none";
-                                }
+                                    if (offset === 0) {
+                                        // Active Card (Front)
+                                        cardStyle += " z-30 scale-100 translate-y-0 rotate-0 opacity-100 hover:scale-105 hover:-translate-y-2";
+                                    } else if (offset === 1) {
+                                        // Next Card (Behind Right)
+                                        cardStyle += " z-20 scale-90 translate-x-12 translate-y-4 rotate-6 opacity-60 cursor-pointer hover:opacity-80 hover:rotate-12";
+                                    } else if (offset === length - 1) {
+                                        // Prev Card (Behind Left)
+                                        cardStyle += " z-10 scale-90 -translate-x-12 translate-y-4 -rotate-6 opacity-60 cursor-pointer hover:opacity-80 hover:-rotate-12";
+                                    } else {
+                                        // Hidden others
+                                        cardStyle += " z-0 scale-50 opacity-0 pointer-events-none";
+                                    }
 
-                                return (
-                                    <div
-                                        key={slide.id}
-                                        className={`${cardStyle}`}
-                                        onClick={() => {
-                                            if (offset === 1) nextSlide();
-                                            if (offset === length - 1) prevSlide();
-                                        }}
-                                    >
-                                        <div className="w-[85vw] max-w-[320px] md:w-[380px] bg-white rounded-[2.5rem] p-6 pb-8 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] border border-white/60 backdrop-blur-sm select-none">
-                                            {/* Image Area */}
-                                            <div className="relative aspect-square bg-gray-50 rounded-[2rem] overflow-hidden mb-6 shadow-inner">
-                                                <Image
-                                                    src={slide.image}
-                                                    alt={language === 'th' ? slide.title.th : slide.title.en}
-                                                    fill
-                                                    className="object-cover"
-                                                    priority={offset === 0}
-                                                />
-                                                {/* Overlay Gradient on Inactive */}
-                                                <div className={`absolute inset-0 bg-white/20 transition-opacity duration-500 ${offset === 0 ? 'opacity-0' : 'opacity-100'}`}></div>
-                                            </div>
+                                    return (
+                                        <div
+                                            key={slide.id}
+                                            className={`${cardStyle}`}
+                                            onClick={() => {
+                                                if (offset === 1) nextSlide();
+                                                if (offset === length - 1) prevSlide();
+                                            }}
+                                        >
+                                            <div className="w-[85vw] max-w-[320px] md:w-[380px] bg-white rounded-[2.5rem] p-6 pb-8 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] border border-white/60 backdrop-blur-sm select-none">
+                                                {/* Image Area */}
+                                                <div className="relative aspect-square bg-gray-50 rounded-[2rem] overflow-hidden mb-6 shadow-inner">
+                                                    <Image
+                                                        src={slide.image}
+                                                        alt={language === 'th' ? slide.title.th : slide.title.en}
+                                                        fill
+                                                        className="object-cover"
+                                                        priority={offset === 0}
+                                                    />
+                                                    {/* Overlay Gradient on Inactive */}
+                                                    <div className={`absolute inset-0 bg-white/20 transition-opacity duration-500 ${offset === 0 ? 'opacity-0' : 'opacity-100'}`}></div>
+                                                </div>
 
-                                            {/* Content */}
-                                            <div className={`text-center transition-all duration-500 ${offset === 0 ? 'opacity-100 transform-none' : 'opacity-50 grayscale'}`}>
-                                                <h3 className="text-2xl font-bold text-gray-900 leading-tight">
-                                                    {language === 'th' ? slide.title.th : slide.title.en}
-                                                </h3>
-                                                <p className="text-gray-500 mt-2 text-sm font-medium">
-                                                    {language === 'th' ? slide.subtitle.th : slide.subtitle.en}
-                                                </p>
-                                                <span className={`inline-block mt-4 text-xs font-bold px-3 py-1 rounded-full ${offset === 0 ? 'bg-primary/10 text-primary animate-pulse' : 'bg-gray-100 text-gray-400'}`}>
-                                                    {language === 'th' ? slide.badge.th : slide.badge.en}
-                                                </span>
+                                                {/* Content */}
+                                                <div className={`text-center transition-all duration-500 ${offset === 0 ? 'opacity-100 transform-none' : 'opacity-50 grayscale'}`}>
+                                                    <h3 className="text-2xl font-bold text-gray-900 leading-tight">
+                                                        {language === 'th' ? slide.title.th : slide.title.en}
+                                                    </h3>
+                                                    <p className="text-gray-500 mt-2 text-sm font-medium">
+                                                        {language === 'th' ? slide.subtitle?.th || '' : slide.subtitle?.en || ''}
+                                                    </p>
+                                                    <span className={`inline-block mt-4 text-xs font-bold px-3 py-1 rounded-full ${offset === 0 ? 'bg-primary/10 text-primary animate-pulse' : 'bg-gray-100 text-gray-400'}`}>
+                                                        {language === 'th' ? slide.badge?.th || '' : slide.badge?.en || ''}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
 
-                        {/* Pagination Indicators */}
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-40">
-                            {slides.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setCurrentSlide(idx)}
-                                    className={`w-2 h-2 rounded-full transition-all duration-300 shadow-sm ${idx === currentSlide ? 'bg-primary w-6' : 'bg-gray-300 hover:bg-gray-400'}`}
-                                />
-                            ))}
+                            {/* Pagination Indicators */}
+                            {slides.length > 1 && (
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-40">
+                                    {slides.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setCurrentSlide(idx)}
+                                            className={`w-2 h-2 rounded-full transition-all duration-300 shadow-sm ${idx === currentSlide ? 'bg-primary w-6' : 'bg-gray-300 hover:bg-gray-400'}`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

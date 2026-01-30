@@ -85,8 +85,8 @@ export const translations = {
                     community: "Community Focused"
                 },
                 award_title: "Award Winning Brand",
-                award_desc: "Recognized for Excellence in 2024",
-                hq_mockup: "Headquarters Image Mockup"
+                award_desc: "Recognized for Excellence in Health & Wellness",
+                hq_mockup: "Our Modern Innovation Center"
             },
             why_choose: {
                 title: "Why Choose Here?",
@@ -165,6 +165,7 @@ export const translations = {
             categories: "Categories",
             banners: "Banners",
             staff: "Staff Management",
+            messages: "Messages",
             welcome: "Welcome back",
             logout: "Logout",
             visit_store: "Visit Store",
@@ -252,6 +253,21 @@ export const translations = {
                 confirm_delete: "Remove this staff member?",
                 no_staff: "No staff members found. Click \"Add New Staff\" to start.",
                 unnamed: "Unnamed Staff"
+            },
+            messages_page: {
+                title: "Customer Messages",
+                subtitle: "Inquiries from contact form",
+                table_customer: "Customer",
+                table_subject: "Subject",
+                table_status: "Status",
+                table_date: "Date",
+                table_action: "Actions",
+                no_messages: "No inquiries yet.",
+                unread: "Unread",
+                read: "Read",
+                btn_delete: "Delete",
+                btn_mark_read: "Mark Read",
+                view_details: "View Message"
             }
         }
     },
@@ -274,8 +290,8 @@ export const translations = {
             title_line1: "นวัตกรรมเพื่อ",
             title_line2: "คุณภาพชีวิตที่ดีกว่า",
             subtitle: "ค้นพบผลิตภัณฑ์ดูแลสุขภาพ ยา และอาหารเสริมเกรดพรีเมียมที่ออกแบบมาเพื่อความเป็นอยู่ที่ดีของคุณ",
-            btn_discover: "Discover Products",
-            btn_about: "Company Story",
+            btn_discover: "เลือกชมสินค้า",
+            btn_about: "เรื่องราวของเรา",
             badges: {
                 effective: "เห็นผลจริง",
                 certified: "มีใบรับรอง",
@@ -341,8 +357,8 @@ export const translations = {
                     community: "ใส่ใจชุมชน"
                 },
                 award_title: "แบรนด์รางวัลคุณภาพ",
-                award_desc: "ได้รับการยอมรับด้านความเป็นเลิศปี 2024",
-                hq_mockup: "รูปจำลองสำนักงานใหญ่"
+                award_desc: "ได้รับรางวัลมาตรฐานยอดเยี่ยมด้านสุขภาพ",
+                hq_mockup: "ศูนย์ส่งเสริมนวัตกรรมที่ทันสมัยของเรา"
             },
             why_choose: {
                 title: "ทำไมต้อง Here?",
@@ -421,6 +437,7 @@ export const translations = {
             categories: "หมวดหมู่",
             banners: "แบนเนอร์",
             staff: "จัดการทีมงาน",
+            messages: "ข้อความติดต่อ",
             welcome: "ยินดีต้อนรับกลับ",
             logout: "ออกจากระบบ",
             visit_store: "ไปที่หน้าเว็บ",
@@ -509,6 +526,21 @@ export const translations = {
                 confirm_delete: "ยืนยันการลบชื่อทีมงานท่านนี้?",
                 no_staff: "ไม่พบข้อมูลทีมงาน กด \"เพิ่มทีมงานใหม่\" เพื่อเริ่มใช้งาน",
                 unnamed: "ไม่ได้ระบุชื่อ"
+            },
+            messages_page: {
+                title: "ข้อความจากลูกค้า",
+                subtitle: "คำถามและความคิดเห็นจากหน้าติดต่อเรา",
+                table_customer: "ลูกค้า",
+                table_subject: "เรื่อง",
+                table_status: "สถานะ",
+                table_date: "วันที่",
+                table_action: "จัดการ",
+                no_messages: "ยังไม่มีข้อความติดต่อเข้ามา",
+                unread: "ยังไม่อ่าน",
+                read: "อ่านแล้ว",
+                btn_delete: "ลบ",
+                btn_mark_read: "อ่านแล้ว",
+                view_details: "ดูข้อความ"
             }
         }
     }

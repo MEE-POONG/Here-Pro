@@ -266,35 +266,103 @@ export async function deleteUser(id: string) {
     revalidatePath('/admin/users');
 }
 
+// --- Contact Messages ---
+export async function createContactMessage(formData: FormData) {
+    try {
+        const name = formData.get("name") as string;
+        const email = formData.get("email") as string;
+        const phone = formData.get("phone") as string;
+        const subject = formData.get("subject") as string;
+        const message = formData.get("message") as string;
+
+        console.log("Creating contact message:", { name, email, subject });
+
+        const result = await db.contactMessage.create({
+            data: { name, email, phone, subject, message }
+        });
+
+        console.log("Contact message created successfully:", result.id);
+        revalidatePath('/admin/messages');
+        return { success: true };
+    } catch (error: any) {
+        console.error("FAILED to create contact message:", error);
+        throw new Error(error.message || "Failed to send message");
+    }
+}
+
+export async function getContactMessages() {
+    try {
+        return await db.contactMessage.findMany({ orderBy: { createdAt: 'desc' } });
+    } catch {
+        return [];
+    }
+}
+
+export async function deleteContactMessage(id: string) {
+    await db.contactMessage.delete({ where: { id } });
+    revalidatePath('/admin/messages');
+}
+
+export async function markMessageAsRead(id: string) {
+    await db.contactMessage.update({
+        where: { id },
+        data: { isRead: true }
+    });
+    revalidatePath('/admin/messages');
+}
+
 // --- Stats ---
 export async function getStats() {
     try {
-        const [productCount, categoryCount, userCount, visitStat] = await Promise.all([
+        const [productCount, categoryCount, userCount, visitStat, unreadCount] = await Promise.all([
             db.product.count(),
             db.category.count(),
             db.user.count(),
-            db.globalStat.findUnique({ where: { key: 'total_visits' } })
+            db.globalStat.findUnique({ where: { key: 'total_visits' } }),
+            db.contactMessage.count({ where: { isRead: false } })
         ]);
         return {
             productCount,
             categoryCount,
             userCount,
-            visitCount: visitStat?.value || 0
+            visitCount: visitStat?.value || 0,
+            unreadCount
         };
     } catch {
-        return { productCount: 0, categoryCount: 0, userCount: 0, visitCount: 0 };
+        return { productCount: 0, categoryCount: 0, userCount: 0, visitCount: 0, unreadCount: 0 };
     }
 }
 
 export async function trackVisit() {
     try {
-        await db.globalStat.upsert({
-            where: { key: 'total_visits' },
-            update: { value: { increment: 1 } },
-            create: { key: 'total_visits', value: 1 }
-        });
+        const now = new Date();
+        const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        await Promise.all([
+            db.globalStat.upsert({
+                where: { key: 'total_visits' },
+                update: { value: { increment: 1 } },
+                create: { key: 'total_visits', value: 1 }
+            }),
+            db.monthlyVisit.upsert({
+                where: { month: monthKey },
+                update: { count: { increment: 1 } },
+                create: { month: monthKey, count: 1 }
+            })
+        ]);
     } catch (error) {
         console.error("Failed to track visit:", error);
+    }
+}
+
+export async function getMonthlyVisits() {
+    try {
+        return await db.monthlyVisit.findMany({
+            orderBy: { month: 'asc' },
+            take: 12
+        });
+    } catch {
+        return [];
     }
 }
 
@@ -311,6 +379,28 @@ export async function seedInitialData() {
             ]
         });
 
+        // Add initial banners
+        await db.banner.createMany({
+            data: [
+                {
+                    title: "Innovation for Your Health | นวัตกรรมเพื่อสุขภาพของคุณ",
+                    subtitle: "Developing premium products for a better life | มุ่งมั่นพัฒนาผลิตภัณฑ์คุณภาพเพื่อชีวิตที่ดีกว่า",
+                    badge: "Best Seller | สินค้ายอดนิยม",
+                    image: "/1356cdcaefe2356df18e5ba31f088507.jpg_720x720q80.jpg",
+                    active: true,
+                    order: 1
+                },
+                {
+                    title: "Certified Manufacturing | มาตรฐานการผลิตระดับโลก",
+                    subtitle: "GMP, HACCP, and ISO Certified Factory | โรงงานได้รับมาตรฐานสากล GMP, HACCP และ ISO",
+                    badge: "International Standard | มาตรฐานสากล",
+                    image: "/uploads/factory-preview.jpg", // Placeholder path or real if exists
+                    active: true,
+                    order: 2
+                }
+            ]
+        });
+
         // Add a default admin
         await db.user.create({
             data: {
@@ -321,5 +411,6 @@ export async function seedInitialData() {
             }
         });
     }
+    revalidatePath('/');
     revalidatePath('/admin');
 }
