@@ -5,46 +5,27 @@ import { ArrowRight, Zap, ShieldCheck, Star, ChevronLeft, ChevronRight } from 'l
 import { useLanguage } from '@/context/LanguageContext';
 import { useState, useEffect } from 'react';
 
-const SLIDES = [
-    {
-        id: 1,
-        image: "/1356cdcaefe2356df18e5ba31f088507.jpg_720x720q80.jpg",
-        title: { en: "Vit C + Selenium", th: "วิตามินซี + ซีลีเนียม" },
-        subtitle: { en: "Premium Dietary Supplement", th: "ผลิตภัณฑ์เสริมอาหารพรีเมียม" },
-        badge: { en: "Best Seller", th: "ขายดีอันดับ 1" }
-    },
-    {
-        id: 2,
-        image: "/cover-viruno-1024x538.webp", // Assuming this is wide, might need object-cover adjustment
-        title: { en: "Immunity Plus Viruno", th: "อิมมูนิตี้ พลัส วิรูโน" },
-        subtitle: { en: "Advanced Viral Defense", th: "สมุนไพรปกป้องขั้นสูง" },
-        badge: { en: "New Arrival", th: "สินค้าใหม่" }
-    },
-    // Add more slides if you want, pointing to other images
-    {
-        id: 4,
-        image: "/vn-11134207-7r98o-lntxcsf53ipm2c.jpeg",
-        title: { en: "Vit C + Selenium", th: "วิตามินซี + ซีลีเนียม" }, // Reusing text for demo
-        subtitle: { en: "Boost Immunity", th: "เสริมภูมิคุ้มกันแข็งแรง" },
-        badge: { en: "Hot Promotion", th: "โปรโมชั่นแรง" }
-    }
-];
+const FALLBACK_SLIDE = {
+    id: 'placeholder',
+    image: "/1356cdcaefe2356df18e5ba31f088507.jpg_720x720q80.jpg",
+    title: { en: "Your Brand Story", th: "เรื่องราวแบรนด์ของคุณ" },
+    subtitle: { en: "Premium Healthcare Manufacturer", th: "ผู้ผลิตสินค้าเพื่อสุขภาพระดับพรีเมียม" },
+    badge: { en: "Established 2026", th: "ก่อตั้งเมื่อปี 2569" }
+};
 
 import { getBanners } from '@/actions/admin-actions'; // Add import
-
-// ...
 
 export function Hero() {
     const { t, language } = useLanguage();
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [slides, setSlides] = useState<any[]>(SLIDES); // Use state for slides
+    const [slides, setSlides] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         async function loadBanners() {
             try {
                 const data = await getBanners();
                 if (data && data.length > 0) {
-                    // Filter active and map to shape
                     const activeBanners = data.filter((b: any) => b.active).map((b: any) => ({
                         id: b.id,
                         image: b.image,
@@ -54,10 +35,17 @@ export function Hero() {
                     }));
                     if (activeBanners.length > 0) {
                         setSlides(activeBanners);
+                    } else {
+                        setSlides([FALLBACK_SLIDE]);
                     }
+                } else {
+                    setSlides([FALLBACK_SLIDE]);
                 }
             } catch (e) {
                 console.error("Failed to load banners", e);
+                setSlides([FALLBACK_SLIDE]);
+            } finally {
+                setIsLoading(false);
             }
         }
         loadBanners();

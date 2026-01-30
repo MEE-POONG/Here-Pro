@@ -4,8 +4,12 @@ import { createProduct, deleteProduct, updateProduct, getProducts, getCategories
 import { useEffect, useState, useRef } from "react";
 import Link from 'next/link';
 import { Trash2, Plus, Search, Image as ImageIcon, Pencil, X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminProductsPage() {
+    const { t, language } = useLanguage();
+    const trans = t.admin.products_page;
+
     type Product = {
         id: string;
         name: string;
@@ -40,7 +44,7 @@ export default function AdminProductsPage() {
     }
 
     async function handleSubmit(formData: FormData) {
-        if (!confirm("Are you sure you want to save this product?")) {
+        if (!confirm(language === 'th' ? "คุณแน่ใจหรือไม่ว่าต้องการบันทึกสินค้านี้?" : "Are you sure you want to save this product?")) {
             return;
         }
 
@@ -56,9 +60,9 @@ export default function AdminProductsPage() {
             setIsFormOpen(false);
             setEditingProduct(null);
             setPreviewImage(null);
-            alert("Product saved successfully!");
+            alert(language === 'th' ? "บันทึกสินค้าเรียบร้อยแล้ว!" : "Product saved successfully!");
         } catch (error) {
-            alert("Error saving product");
+            alert(language === 'th' ? "เกิดข้อผิดพลาดในการบันทึกสินค้า" : "Error saving product");
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -66,7 +70,7 @@ export default function AdminProductsPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm("Delete this product?")) return;
+        if (!confirm(language === 'th' ? "ยืนยันการลบสินค้าชิ้นนี้?" : "Delete this product?")) return;
         setIsLoading(true);
         await deleteProduct(id);
         await loadData();
@@ -75,8 +79,6 @@ export default function AdminProductsPage() {
     function openEdit(product: Product) {
         setEditingProduct(product);
         setIsFormOpen(true);
-        // Timeout to allow form to render before setting values if needed, 
-        // though defaultValues approach in React is better.
     }
 
     function closeForm() {
@@ -89,15 +91,15 @@ export default function AdminProductsPage() {
         <div className="space-y-8">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Products</h1>
-                    <p className="text-gray-500 mt-1">Manage your product catalog</p>
+                    <h1 className="text-3xl font-bold text-gray-800">{trans.title}</h1>
+                    <p className="text-gray-500 mt-1">{trans.subtitle}</p>
                 </div>
                 {!isFormOpen && (
                     <button
                         onClick={() => setIsFormOpen(true)}
                         className="bg-gradient-to-r from-primary to-[#00bcd4] text-white px-6 py-2.5 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2"
                     >
-                        <Plus size={20} /> Add Product
+                        <Plus size={20} /> {trans.add_title}
                     </button>
                 )}
             </div>
@@ -109,22 +111,22 @@ export default function AdminProductsPage() {
                         <X size={24} />
                     </button>
                     <h3 className="font-bold text-gray-900 mb-6 pb-2 border-b border-gray-100">
-                        {editingProduct ? 'Edit Product' : 'Add New Product'}
+                        {editingProduct ? (language === 'th' ? 'แก้ไขสินค้า' : 'Edit Product') : trans.add_title}
                     </h3>
                     <form ref={formRef} action={handleSubmit} className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Product Name</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{trans.table_name}</label>
                                 <input
                                     name="name"
                                     defaultValue={editingProduct?.name}
                                     required
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400"
-                                    placeholder="Product Name"
+                                    placeholder={trans.table_name}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Price (THB)</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{trans.table_price} (THB)</label>
                                 <input
                                     name="price"
                                     type="number"
@@ -136,7 +138,7 @@ export default function AdminProductsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Category</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{trans.table_category}</label>
                                 {categories.length > 0 ? (
                                     <select
                                         name="categoryId"
@@ -144,30 +146,30 @@ export default function AdminProductsPage() {
                                         defaultValue={editingProduct?.categoryId || ""}
                                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-gray-900"
                                     >
-                                        <option value="" disabled>-- Select Category --</option>
+                                        <option value="" disabled>-- {language === 'th' ? 'เลือกหมวดหมู่' : 'Select Category'} --</option>
                                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                 ) : (
                                     <div className="p-3 bg-red-50 text-red-500 rounded-xl text-sm border border-red-100">
-                                        Please create a category first! <Link href="/admin/categories" className="underline font-bold">Go to Categories</Link>
+                                        {language === 'th' ? 'โปรดสร้างหมวดหมู่ก่อน!' : 'Please create a category first!'} <Link href="/admin/categories" className="underline font-bold">{language === 'th' ? 'ไปที่หน้าหมวดหมู่' : 'Go to Categories'}</Link>
                                     </div>
                                 )}
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Key Benefits</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{language === 'th' ? 'คุณสมบัติเด่น' : 'Key Benefits'}</label>
                                 <textarea
                                     name="benefits"
                                     rows={4}
                                     defaultValue={editingProduct?.benefits?.join('\n')}
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400"
-                                    placeholder={`- Joint Pain Relief\n- Improved Mobility\n- Anti-inflammatory`}
+                                    placeholder={`- ${language === 'th' ? 'สรรพคุณข้อที่ 1' : 'Benefit 1'}\n- ${language === 'th' ? 'สรรพคุณข้อที่ 2' : 'Benefit 2'}`}
                                 ></textarea>
-                                <p className="text-xs text-gray-500 mt-1">Enter each benefit on a new line.</p>
+                                <p className="text-xs text-gray-500 mt-1">{language === 'th' ? 'ใส่สรรพคุณทีละบรรทัด' : 'Enter each benefit on a new line.'}</p>
                             </div>
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Product Image</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{trans.table_image}</label>
                                 <div className="border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-center hover:bg-gray-100 transition-colors cursor-pointer relative overflow-hidden h-48 flex items-center justify-center group">
                                     <input
                                         type="file"
@@ -192,25 +194,25 @@ export default function AdminProductsPage() {
                                             />
                                             <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
                                                 <ImageIcon size={32} className="mb-2" />
-                                                <span className="text-sm font-medium">Click to change image</span>
+                                                <span className="text-sm font-medium">{language === 'th' ? 'คลิกเพื่อเปลี่ยนรูปภาพ' : 'Click to change image'}</span>
                                             </div>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-2 text-gray-500 py-2">
                                             <ImageIcon size={32} />
-                                            <span className="text-sm font-medium">Click to upload image</span>
+                                            <span className="text-sm font-medium">{language === 'th' ? 'คลิกเพื่ออัปโหลดรูปภาพ' : 'Click to upload image'}</span>
                                         </div>
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{t.admin.categories_page.item_desc}</label>
                                 <textarea
                                     name="description"
                                     rows={3}
                                     defaultValue={editingProduct?.description}
                                     className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400"
-                                    placeholder="Product details..."
+                                    placeholder={language === 'th' ? 'รายละเอียดสินค้า...' : 'Product details...'}
                                 ></textarea>
                             </div>
                             <div className="flex items-center gap-2 pt-2">
@@ -221,13 +223,13 @@ export default function AdminProductsPage() {
                                     defaultChecked={editingProduct?.featured}
                                     className="w-5 h-5 text-primary rounded focus:ring-primary"
                                 />
-                                <label htmlFor="featured" className="text-gray-700 font-medium">Mark as Featured Product</label>
+                                <label htmlFor="featured" className="text-gray-700 font-medium">{language === 'th' ? 'กำหนดเป็นสินค้าแนะนำ' : 'Mark as Featured Product'}</label>
                             </div>
                         </div>
                         <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-gray-100 mt-2">
-                            <button type="button" onClick={closeForm} className="px-6 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancel</button>
+                            <button type="button" onClick={closeForm} className="px-6 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors">{trans.btn_cancel}</button>
                             <button type="submit" className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-primary/90 transition-transform active:scale-95">
-                                {editingProduct ? 'Update Product' : 'Save Product'}
+                                {editingProduct ? trans.btn_save : trans.btn_create}
                             </button>
                         </div>
                     </form>
@@ -239,10 +241,10 @@ export default function AdminProductsPage() {
                 <table className="w-full text-left">
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th className="p-4 font-bold text-gray-700 pl-6">Product</th>
-                            <th className="p-4 font-bold text-gray-700">Category</th>
-                            <th className="p-4 font-bold text-gray-700">Price</th>
-                            <th className="p-4 font-bold text-gray-700 text-right pr-6">Actions</th>
+                            <th className="p-4 font-bold text-gray-700 pl-6">{trans.table_name}</th>
+                            <th className="p-4 font-bold text-gray-700">{trans.table_category}</th>
+                            <th className="p-4 font-bold text-gray-700">{trans.table_price}</th>
+                            <th className="p-4 font-bold text-gray-700 text-right pr-6">{trans.table_action}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -274,14 +276,14 @@ export default function AdminProductsPage() {
                                         <button
                                             onClick={() => openEdit(p)}
                                             className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-all"
-                                            title="Edit"
+                                            title={language === 'th' ? 'แก้ไข' : 'Edit'}
                                         >
                                             <Pencil size={18} />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(p.id)}
                                             className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all"
-                                            title="Delete"
+                                            title={language === 'th' ? 'ลบ' : 'Delete'}
                                         >
                                             <Trash2 size={18} />
                                         </button>
@@ -292,7 +294,7 @@ export default function AdminProductsPage() {
                         {products.length === 0 && !isLoading && (
                             <tr>
                                 <td colSpan={4} className="p-12 text-center text-gray-400">
-                                    No products found. Click "Add Product" to start.
+                                    {language === 'th' ? 'ไม่พบสินค้าในระบบ กด "เพิ่มสินค้าใหม่" เพื่อเริ่มใช้งาน' : 'No products found. Click "Add Product" to start.'}
                                 </td>
                             </tr>
                         )}

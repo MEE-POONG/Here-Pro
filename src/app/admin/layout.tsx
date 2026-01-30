@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Package, List, Users, LogOut, Settings, Store, Image as ImageIcon } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function AdminLayout({
     children,
@@ -10,14 +11,29 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const { t, language, setLanguage } = useLanguage();
 
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', href: '/admin' },
-        { icon: Package, label: 'Products', href: '/admin/products' },
-        { icon: List, label: 'Categories', href: '/admin/categories' },
-        { icon: ImageIcon, label: 'Banners', href: '/admin/banners' },
-        { icon: Users, label: 'Staff Management', href: '/admin/users' },
+        { icon: LayoutDashboard, label: t.admin.dashboard, href: '/admin' },
+        { icon: Package, label: t.admin.products, href: '/admin/products' },
+        { icon: List, label: t.admin.categories, href: '/admin/categories' },
+        { icon: ImageIcon, label: t.admin.banners, href: '/admin/banners' },
+        { icon: Users, label: t.admin.staff, href: '/admin/users' },
     ];
+
+    const getPageTitle = () => {
+        if (pathname === '/admin') return t.admin.overview;
+        const parts = pathname.split('/');
+        const lastPart = parts[parts.length - 1];
+
+        switch (lastPart) {
+            case 'products': return t.admin.products;
+            case 'categories': return t.admin.categories;
+            case 'banners': return t.admin.banners;
+            case 'users': return t.admin.staff;
+            default: return lastPart.replace('-', ' ');
+        }
+    };
 
     return (
         <div className="flex h-screen bg-gray-50 font-sans">
@@ -32,13 +48,13 @@ export default function AdminLayout({
                             <h1 className="text-xl font-bold tracking-tight text-white">
                                 Here-Pro
                             </h1>
-                            <p className="text-xs text-white/70 font-medium">Backoffice System</p>
+                            <p className="text-xs text-white/70 font-medium">{language === 'th' ? 'ระบบหลังบ้าน' : 'Backoffice System'}</p>
                         </div>
                     </Link>
                 </div>
 
                 <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
-                    <p className="px-4 text-xs font-bold text-white/50 uppercase tracking-widest mb-4 mt-2">Menu</p>
+                    <p className="px-4 text-xs font-bold text-white/50 uppercase tracking-widest mb-4 mt-2">{t.admin.menu}</p>
                     {menuItems.map((item) => {
                         const isActive = item.href === '/admin'
                             ? pathname === '/admin'
@@ -59,14 +75,14 @@ export default function AdminLayout({
                     })}
 
                     <div className="mt-8 pt-8 border-t border-white/10">
-                        <p className="px-4 text-xs font-bold text-white/50 uppercase tracking-widest mb-4">Shortcuts</p>
+                        <p className="px-4 text-xs font-bold text-white/50 uppercase tracking-widest mb-4">{t.admin.shortcuts}</p>
                         <Link
                             href="/"
                             target="_blank"
                             className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all font-medium"
                         >
                             <Store size={20} className="opacity-70" />
-                            Visit Store
+                            {t.admin.visit_store}
                         </Link>
                     </div>
                 </nav>
@@ -74,7 +90,7 @@ export default function AdminLayout({
                 <div className="p-6 bg-[#008ba3]">
                     <button className="flex items-center gap-3 w-full px-4 py-3 text-white/90 hover:bg-white/10 rounded-xl transition-colors font-medium">
                         <LogOut size={20} />
-                        Logout
+                        {t.admin.logout}
                     </button>
                 </div>
             </aside>
@@ -85,12 +101,28 @@ export default function AdminLayout({
                 <header className="bg-white/80 backdrop-blur-md sticky top-0 z-10 px-8 py-5 flex justify-between items-center border-b border-gray-100">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800 capitalize">
-                            {pathname === '/admin' ? 'Dashboard Overview' : pathname.split('/').slice(-1)[0].replace('-', ' ')}
+                            {getPageTitle()}
                         </h2>
-                        <p className="text-sm text-gray-500">Welcome back, Admin</p>
+                        <p className="text-sm text-gray-500">{t.admin.welcome}, Admin</p>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6">
+                        {/* Language Switcher */}
+                        <div className="flex items-center bg-gray-100 rounded-full p-1 border border-gray-200 shadow-sm">
+                            <button
+                                onClick={() => setLanguage('en')}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${language === 'en' ? 'bg-white text-primary shadow-md' : 'text-gray-500 hover:bg-gray-200'}`}
+                            >
+                                EN
+                            </button>
+                            <button
+                                onClick={() => setLanguage('th')}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${language === 'th' ? 'bg-white text-primary shadow-md' : 'text-gray-500 hover:bg-gray-200'}`}
+                            >
+                                TH
+                            </button>
+                        </div>
+
                         <div className="flex items-center gap-3 pl-6 border-l border-gray-100">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#4dd0e1] to-[#00bcd4] p-[2px]">
                                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
@@ -101,7 +133,7 @@ export default function AdminLayout({
                                 <div className="text-sm font-bold text-gray-900">Super Admin</div>
                                 <div className="text-xs text-emerald-500 font-bold flex items-center gap-1">
                                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    Online
+                                    {t.admin.online}
                                 </div>
                             </div>
                         </div>

@@ -3,8 +3,12 @@
 import { createCategory, deleteCategory, getCategories } from "@/actions/admin-actions";
 import { useEffect, useState, useRef } from "react";
 import { Trash2, Plus, Search } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminCategoriesPage() {
+    const { t } = useLanguage();
+    const trans = t.admin.categories_page;
+
     // Define type for category matching Prisma model
     type Category = {
         id: string;
@@ -51,8 +55,8 @@ export default function AdminCategoriesPage() {
         <div className="space-y-8">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Categories</h1>
-                    <p className="text-gray-500 mt-1">Manage product categories</p>
+                    <h1 className="text-3xl font-bold text-gray-800">{trans.title}</h1>
+                    <p className="text-gray-500 mt-1">{trans.subtitle}</p>
                 </div>
             </div>
 
@@ -63,10 +67,10 @@ export default function AdminCategoriesPage() {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th className="p-4 font-bold text-gray-700">Name</th>
-                                    <th className="p-4 font-bold text-gray-700">Slug</th>
-                                    <th className="p-4 font-bold text-gray-700">Description</th>
-                                    <th className="p-4 font-bold text-gray-700 text-right">Action</th>
+                                    <th className="p-4 font-bold text-gray-700">{trans.item_name}</th>
+                                    <th className="p-4 font-bold text-gray-700">{trans.item_slug}</th>
+                                    <th className="p-4 font-bold text-gray-700">{trans.item_desc}</th>
+                                    <th className="p-4 font-bold text-gray-700 text-right">{trans.item_action}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -100,19 +104,19 @@ export default function AdminCategoriesPage() {
                     <form ref={formRef} action={handleCreate} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
                         <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                             <Plus size={20} className="text-primary" />
-                            Add New Category
+                            {trans.add_title}
                         </h3>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Name</label>
-                                <input name="name" required placeholder="e.g. Medicine" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-900 placeholder:text-gray-400" />
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{trans.item_name}</label>
+                                <input name="name" required placeholder={trans.placeholder_name} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-900 placeholder:text-gray-400" />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                                <textarea name="description" rows={3} placeholder="Short description..." className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-900 placeholder:text-gray-400"></textarea>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">{trans.item_desc}</label>
+                                <textarea name="description" rows={3} placeholder={trans.placeholder_desc} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-900 placeholder:text-gray-400"></textarea>
                             </div>
                             <button type="submit" disabled={isInternalLoading} className="w-full py-3 bg-gradient-to-r from-[#4dd0e1] to-[#00bcd4] text-white font-bold rounded-xl shadow-lg shadow-cyan-200 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50">
-                                {isInternalLoading ? 'Saving...' : 'Create Category'}
+                                {isInternalLoading ? '...' : trans.btn_create}
                             </button>
                         </div>
                     </form>
