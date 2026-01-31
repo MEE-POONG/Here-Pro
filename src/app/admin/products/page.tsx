@@ -1,9 +1,9 @@
 "use client";
 
-import { createProduct, deleteProduct, updateProduct, getProducts, getCategories } from "@/actions/admin-actions";
+import { createProduct, deleteProduct, updateProduct, getProducts, getCategories, createCategory } from "@/actions/admin-actions";
 import { useEffect, useState, useRef } from "react";
 import Link from 'next/link';
-import { Trash2, Plus, Search, Image as ImageIcon, Pencil, X } from "lucide-react";
+import { Trash2, Plus, Search, Image as ImageIcon, Pencil, X, Check, XCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminProductsPage() {
@@ -33,6 +33,10 @@ export default function AdminProductsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const formRef = useRef<HTMLFormElement>(null);
 
+    // New Category State
+    const [isAddingCat, setIsAddingCat] = useState(false);
+    const [newCatName, setNewCatName] = useState("");
+
     useEffect(() => {
         loadData();
     }, []);
@@ -47,6 +51,26 @@ export default function AdminProductsPage() {
         setProducts(prodData as any);
         setCategories(catData as any);
         setIsLoading(false);
+    }
+
+    async function handleCreateCategory() {
+        if (!newCatName.trim()) return;
+        try {
+            const formData = new FormData();
+            formData.append("name", newCatName);
+            await createCategory(formData);
+
+            // Refresh categories
+            const newCats = await getCategories();
+            setCategories(newCats as any);
+
+            setIsAddingCat(false);
+            setNewCatName("");
+            alert(language === 'th' ? "สร้างหมวดหมู่สำเร็จ!" : "Category created successfully!");
+        } catch (error) {
+            console.error("Failed to create category", error);
+            alert(language === 'th' ? "สร้างหมวดหมู่ไม่สำเร็จ" : "Failed to create category");
+        }
     }
 
     async function handleSubmit(formData: FormData) {
@@ -91,6 +115,7 @@ export default function AdminProductsPage() {
         setIsFormOpen(false);
         setEditingProduct(null);
         setPreviewImage(null);
+        setIsAddingCat(false);
     }
 
     return (
@@ -157,19 +182,49 @@ export default function AdminProductsPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">{trans.table_category}</label>
-                                {categories.length > 0 ? (
-                                    <select
-                                        name="categoryId"
-                                        required
-                                        defaultValue={editingProduct?.categoryId || ""}
-                                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-gray-900"
-                                    >
-                                        <option value="" disabled>-- {language === 'th' ? 'เลือกหมวดหมู่' : 'Select Category'} --</option>
-                                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                    </select>
+                                {isAddingCat ? (
+                                    <div className="flex gap-2 animate-fade-in-up">
+                                        <input
+                                            type="text"
+                                            value={newCatName}
+                                            onChange={(e) => setNewCatName(e.target.value)}
+                                            placeholder={language === 'th' ? "ชื่อหมวดหมู่ใหม่" : "New category name"}
+                                            className="flex-grow p-3 bg-white border border-primary ring-2 ring-primary/20 rounded-xl text-gray-900 outline-none"
+                                            autoFocus
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleCreateCategory}
+                                            className="px-4 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors shadow-md"
+                                        >
+                                            <Check size={20} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsAddingCat(false)}
+                                            className="px-4 bg-gray-200 text-gray-600 rounded-xl hover:bg-gray-300 transition-colors"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <div className="p-3 bg-red-50 text-red-500 rounded-xl text-sm border border-red-100">
-                                        {language === 'th' ? 'โปรดสร้างหมวดหมู่ก่อน!' : 'Please create a category first!'} <Link href="/admin/categories" className="underline font-bold">{language === 'th' ? 'ไปที่หน้าหมวดหมู่' : 'Go to Categories'}</Link>
+                                    <div className="flex gap-2">
+                                        <select
+                                            name="categoryId"
+                                            required
+                                            defaultValue={editingProduct?.categoryId || ""}
+                                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-gray-900"
+                                        >
+                                            <option value="" disabled>-- {language === 'th' ? 'เลือกหมวดหมู่' : 'Select Category'} --</option>
+                                            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsAddingCat(true)}
+                                            className="px-3 bg-blue-50 text-primary border border-blue-100 rounded-xl hover:bg-white hover:shadow-md transition-all whitespace-nowrap font-bold text-sm flex items-center gap-1"
+                                        >
+                                            <Plus size={16} /> {language === 'th' ? 'เพิ่ม' : 'New'}
+                                        </button>
                                     </div>
                                 )}
                             </div>

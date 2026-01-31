@@ -32,7 +32,6 @@ export default function AdminLayout({
     const menuItems = [
         { icon: LayoutDashboard, label: t.admin.dashboard, href: '/admin' },
         { icon: Package, label: t.admin.products, href: '/admin/products' },
-        { icon: List, label: t.admin.categories, href: '/admin/categories' },
         { icon: ImageIcon, label: t.admin.banners, href: '/admin/banners' },
         { icon: Users, label: t.admin.staff, href: '/admin/users' },
         { icon: Mail, label: t.admin.messages, href: '/admin/messages', badge: unreadCount },
