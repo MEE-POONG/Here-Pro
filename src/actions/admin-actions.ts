@@ -2,6 +2,8 @@
 
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 // --- Products ---
 export async function getProducts() {
@@ -77,6 +79,11 @@ async function saveFile(file: File): Promise<string> {
 }
 
 export async function createProduct(formData: FormData) {
+    const session = await auth();
+    if (!session) {
+        throw new Error("Unauthorized");
+    }
+
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const price = 0; // Default price since it's not used
@@ -115,6 +122,11 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(id: string, formData: FormData) {
+    const session = await auth();
+    if (!session) {
+        throw new Error("Unauthorized");
+    }
+
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const price = 0; // Default price since it's not used
@@ -145,6 +157,11 @@ export async function updateProduct(id: string, formData: FormData) {
 }
 
 export async function deleteProduct(id: string) {
+    const session = await auth();
+    if (!session) {
+        throw new Error("Unauthorized");
+    }
+
     await db.product.delete({ where: { id } });
     revalidatePath('/admin/products');
 }
@@ -171,6 +188,9 @@ export async function getBanners() {
 }
 
 export async function createBanner(formData: FormData) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     const title = formData.get("title") as string;
     const subtitle = formData.get("subtitle") as string;
     const badge = formData.get("badge") as string;
@@ -195,6 +215,9 @@ export async function createBanner(formData: FormData) {
 }
 
 export async function updateBanner(id: string, formData: FormData) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     const title = formData.get("title") as string;
     const subtitle = formData.get("subtitle") as string;
     const badge = formData.get("badge") as string;
@@ -222,6 +245,9 @@ export async function updateBanner(id: string, formData: FormData) {
 }
 
 export async function deleteBanner(id: string) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     await db.banner.delete({ where: { id } });
     revalidatePath('/');
     revalidatePath('/admin/banners');
@@ -237,6 +263,9 @@ export async function getCategories() {
 }
 
 export async function createCategory(formData: FormData) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     const name = formData.get("name") as string;
     const slug = name.toLowerCase().replace(/ /g, '-');
     const description = formData.get("description") as string;
@@ -248,6 +277,9 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function deleteCategory(id: string) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     await db.category.delete({ where: { id } });
     revalidatePath('/admin/categories');
 }
@@ -262,6 +294,9 @@ export async function getUsers() {
 }
 
 export async function createUser(formData: FormData) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string; // Note: Should hash password in real app
@@ -274,6 +309,9 @@ export async function createUser(formData: FormData) {
 }
 
 export async function updateUser(id: string, formData: FormData) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -292,6 +330,9 @@ export async function updateUser(id: string, formData: FormData) {
 }
 
 export async function deleteUser(id: string) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     await db.user.delete({ where: { id } });
     revalidatePath('/admin/users');
 }
@@ -329,11 +370,17 @@ export async function getContactMessages() {
 }
 
 export async function deleteContactMessage(id: string) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     await db.contactMessage.delete({ where: { id } });
     revalidatePath('/admin/messages');
 }
 
 export async function markMessageAsRead(id: string) {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
     await db.contactMessage.update({
         where: { id },
         data: { isRead: true }

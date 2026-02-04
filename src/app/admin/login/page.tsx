@@ -3,8 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogIn, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
+import { Mail, Lock, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -40,95 +39,117 @@ export default function AdminLoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary via-[#00bcd4] to-primary flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-primary to-[#00bcd4] p-8 text-center">
-                    <div className="w-20 h-20 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-                        <LogIn className="text-primary" size={40} />
-                    </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Admin Login</h1>
-                    <p className="text-white/90 text-sm">เข้าสู่ระบบจัดการ Here-Pro</p>
-                </div>
-
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm animate-fade-in-up">
-                            {error}
+        <div className="min-h-screen bg-gradient-to-br from-[#e0f7fa] via-white to-[#b2ebf2] flex items-center justify-center p-4">
+            {/* Login Card */}
+            <div className="w-full max-w-md">
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-primary to-[#00bcd4] p-8 text-center">
+                        <div className="w-20 h-20 bg-white rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                            <div className="text-3xl font-black text-primary">HP</div>
                         </div>
-                    )}
+                        <h1 className="text-2xl font-bold text-white mb-1">HERE-PRO</h1>
+                        <p className="text-white/90 text-sm">Dashboard Management System</p>
+                    </div>
 
-                    <div className="space-y-4">
-                        {/* Email */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
-                                อีเมล
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900"
-                                    placeholder="admin@example.com"
-                                />
+                    {/* Form */}
+                    <div className="p-8">
+                        <div className="text-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-2">ยินดีต้อนรับกลับคืนสู่ระบบ</h2>
+                            <div className="flex items-center justify-center gap-2 text-primary">
+                                <ShieldCheck size={16} />
+                                <p className="text-sm font-medium">เฉพาะผู้ดูแลระบบเท่านั้น</p>
                             </div>
                         </div>
 
-                        {/* Password */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
-                                รหัสผ่าน
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    className="w-full pl-12 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900"
-                                    placeholder="••••••••"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            {error && (
+                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                                    {error}
+                                </div>
+                            )}
+
+                            {/* Email */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    อีเมล / Username
+                                </label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900"
+                                        placeholder="admin@here-pro.com"
+                                    />
+                                </div>
                             </div>
-                        </div>
+
+                            {/* Password */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    รหัสผ่าน
+                                </label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Remember & Forgot */}
+                            <div className="flex items-center justify-between text-sm">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <span className="text-gray-600">จดจำฉัน</span>
+                                </label>
+                                <a href="#" className="text-primary hover:text-[#00bcd4] font-medium">
+                                    ลืมรหัสผ่าน?
+                                </a>
+                            </div>
+
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-gradient-to-r from-primary to-[#00bcd4] text-white py-3.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={20} />
+                                        กำลังเข้าสู่ระบบ...
+                                    </>
+                                ) : (
+                                    "เข้าสู่ระบบ"
+                                )}
+                            </button>
+                        </form>
                     </div>
 
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-primary to-[#00bcd4] text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
-                    >
-                        {isLoading ? (
-                            <>
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                กำลังเข้าสู่ระบบ...
-                            </>
-                        ) : (
-                            <>
-                                <LogIn size={20} />
-                                เข้าสู่ระบบ
-                            </>
-                        )}
-                    </button>
-                </form>
-
-                {/* Footer */}
-                <div className="px-8 pb-8 text-center">
-                    <p className="text-sm text-gray-500">
-                        © 2024 Here-Pro. All rights reserved.
-                    </p>
+                    {/* Footer */}
+                    <div className="px-8 pb-6 text-center border-t border-gray-100 pt-4">
+                        <p className="text-xs text-gray-500">
+                            © 2024 HERE-PRO. All rights reserved.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
