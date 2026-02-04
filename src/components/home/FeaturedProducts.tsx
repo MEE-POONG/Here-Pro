@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { ArrowRight, Info, Search } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useEffect, useState } from 'react';
-import { getProducts } from '@/actions/admin-actions';
+import { getActiveProducts } from '@/actions/admin-actions';
 
 export function FeaturedProducts() {
     const { t, language } = useLanguage();
@@ -15,7 +15,7 @@ export function FeaturedProducts() {
     useEffect(() => {
         async function load() {
             try {
-                const data = await getProducts();
+                const data = await getActiveProducts();
                 setProducts(data);
             } catch (e) {
                 console.error(e);

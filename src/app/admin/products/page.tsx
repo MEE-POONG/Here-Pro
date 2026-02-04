@@ -1,9 +1,9 @@
 "use client";
 
-import { createProduct, deleteProduct, updateProduct, getProducts, getCategories, createCategory } from "@/actions/admin-actions";
+import { createProduct, deleteProduct, updateProduct, getProducts, getCategories, createCategory, toggleProductActive } from "@/actions/admin-actions";
 import { useEffect, useState, useRef } from "react";
 import Link from 'next/link';
-import { Trash2, Plus, Search, Image as ImageIcon, Pencil, X, Check, XCircle } from "lucide-react";
+import { Trash2, Plus, Search, Image as ImageIcon, Pencil, X, Check, XCircle, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminProductsPage() {
@@ -20,6 +20,7 @@ export default function AdminProductsPage() {
         description: string;
         featured: boolean;
         benefits: string[];
+        isActive?: boolean;
     };
 
     type Category = { id: string; name: string };
@@ -74,10 +75,6 @@ export default function AdminProductsPage() {
     }
 
     async function handleSubmit(formData: FormData) {
-        if (!confirm(language === 'th' ? "คุณแน่ใจหรือไม่ว่าต้องการบันทึกสินค้านี้?" : "Are you sure you want to save this product?")) {
-            return;
-        }
-
         setIsLoading(true);
         try {
             if (editingProduct) {
@@ -100,9 +97,14 @@ export default function AdminProductsPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm(language === 'th' ? "ยืนยันการลบสินค้าชิ้นนี้?" : "Delete this product?")) return;
         setIsLoading(true);
         await deleteProduct(id);
+        await loadData();
+    }
+
+    async function handleToggleActive(id: string) {
+        setIsLoading(true);
+        await toggleProductActive(id);
         await loadData();
     }
 
@@ -168,18 +170,7 @@ export default function AdminProductsPage() {
                                     placeholder={trans.table_name}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">{trans.table_price} (THB)</label>
-                                <input
-                                    name="price"
-                                    type="number"
-                                    step="0.01"
-                                    defaultValue={editingProduct?.price}
-                                    required
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400"
-                                    placeholder="0.00"
-                                />
-                            </div>
+
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">{trans.table_category}</label>
                                 {isAddingCat ? (
@@ -316,7 +307,7 @@ export default function AdminProductsPage() {
                         <tr>
                             <th className="p-4 font-bold text-gray-700 pl-6">{trans.table_name}</th>
                             <th className="p-4 font-bold text-gray-700">{trans.table_category}</th>
-                            <th className="p-4 font-bold text-gray-700">{trans.table_price}</th>
+
                             <th className="p-4 font-bold text-gray-700 text-right pr-6">{trans.table_action}</th>
                         </tr>
                     </thead>
@@ -343,9 +334,16 @@ export default function AdminProductsPage() {
                                         {p.category?.name || 'Uncategorized'}
                                     </span>
                                 </td>
-                                <td className="p-4 font-bold text-gray-700">฿{Number(p.price).toLocaleString()}</td>
+
                                 <td className="p-4 text-right pr-6">
                                     <div className="flex justify-end gap-2">
+                                        <button
+                                            onClick={() => handleToggleActive(p.id)}
+                                            className={`${p.isActive ? 'text-green-500 hover:text-green-700 hover:bg-green-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'} p-2 rounded-lg transition-all`}
+                                            title={p.isActive ? (language === 'th' ? 'ซ่อนสินค้า' : 'Hide Product') : (language === 'th' ? 'แสดงสินค้า' : 'Show Product')}
+                                        >
+                                            {p.isActive ? <Eye size={18} /> : <EyeOff size={18} />}
+                                        </button>
                                         <button
                                             onClick={() => openEdit(p)}
                                             className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-all"

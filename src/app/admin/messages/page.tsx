@@ -40,7 +40,7 @@ export default function MessagesPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm(language === 'th' ? 'ยืนยันการลบข้อความนี้?' : 'Are you sure you want to delete this message?')) return;
+        setIsLoading(true);
         try {
             await deleteContactMessage(id);
             loadMessages();

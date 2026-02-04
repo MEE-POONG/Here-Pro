@@ -1,11 +1,12 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Package, List, Users, LogOut, Settings, Store, Image as ImageIcon, Mail, Bell } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useState, useEffect } from 'react';
 import { getStats } from '@/actions/admin-actions';
+import { signOut } from 'next-auth/react';
 
 export default function AdminLayout({
     children,
@@ -112,7 +113,10 @@ export default function AdminLayout({
                 </nav>
 
                 <div className="p-6 bg-[#008ba3]">
-                    <button className="flex items-center gap-3 w-full px-4 py-3 text-white/90 hover:bg-white/10 rounded-xl transition-colors font-medium">
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/admin/login' })}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-white/90 hover:bg-white/10 rounded-xl transition-colors font-medium"
+                    >
                         <LogOut size={20} />
                         {t.admin.logout}
                     </button>

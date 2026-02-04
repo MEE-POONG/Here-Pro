@@ -20,6 +20,24 @@ export async function getProducts() {
     }
 }
 
+// Get only active products (for frontend display)
+export async function getActiveProducts() {
+    try {
+        const products = await db.product.findMany({
+            where: { isActive: true },
+            include: { category: true },
+            orderBy: { createdAt: 'desc' },
+        });
+        return products.map(product => ({
+            ...product,
+            price: Number(product.price)
+        }));
+    } catch (error) {
+        console.error("Error fetching active products:", error);
+        return [];
+    }
+}
+
 export async function getProduct(id: string) {
     try {
         const product = await db.product.findUnique({
@@ -61,7 +79,7 @@ async function saveFile(file: File): Promise<string> {
 export async function createProduct(formData: FormData) {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
-    const price = parseFloat(formData.get("price") as string);
+    const price = 0; // Default price since it's not used
     const categoryId = formData.get("categoryId") as string;
     const featured = formData.get("featured") === "on";
     const benefits = (formData.get("benefits") as string || "").split('\n').filter(b => b.trim() !== "");
@@ -99,7 +117,7 @@ export async function createProduct(formData: FormData) {
 export async function updateProduct(id: string, formData: FormData) {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
-    const price = parseFloat(formData.get("price") as string);
+    const price = 0; // Default price since it's not used
     const categoryId = formData.get("categoryId") as string;
     const featured = formData.get("featured") === "on";
     const benefits = (formData.get("benefits") as string || "").split('\n').filter(b => b.trim() !== "");
@@ -129,6 +147,18 @@ export async function updateProduct(id: string, formData: FormData) {
 export async function deleteProduct(id: string) {
     await db.product.delete({ where: { id } });
     revalidatePath('/admin/products');
+}
+
+export async function toggleProductActive(id: string) {
+    const product = await db.product.findUnique({ where: { id } });
+    if (!product) return;
+
+    await db.product.update({
+        where: { id },
+        data: { isActive: !product.isActive }
+    });
+    revalidatePath('/admin/products');
+    revalidatePath('/');
 }
 
 // --- Banners ---

@@ -37,6 +37,7 @@ model Product {
   category    Category @relation(fields: [categoryId], references: [id])
   featured    Boolean  @default(false)
   benefits    String[]
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

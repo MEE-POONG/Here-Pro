@@ -58,7 +58,6 @@ export default function AdminUsersPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm(trans.confirm_delete)) return;
         setIsLoading(true);
         await deleteUser(id);
         await loadData();

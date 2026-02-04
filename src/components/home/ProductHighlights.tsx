@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Info } from 'lucide-react';
 import { TiltCard } from '../ui/TiltCard';
 import { useEffect, useState } from 'react';
-import { getProducts } from '@/actions/admin-actions';
+import { getActiveProducts } from '@/actions/admin-actions';
 import Image from 'next/image';
 
 export function ProductHighlights() {
@@ -13,7 +13,7 @@ export function ProductHighlights() {
     useEffect(() => {
         async function load() {
             try {
-                const data = await getProducts();
+                const data = await getActiveProducts();
                 // Take first 4 as recommendations
                 setProducts(data.slice(0, 4));
             } catch (e) {

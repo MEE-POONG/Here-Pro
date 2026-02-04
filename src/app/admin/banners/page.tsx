@@ -37,7 +37,6 @@ export default function AdminBannersPage() {
     }
 
     async function handleSubmit(formData: FormData) {
-        if (!confirm(language === 'th' ? "ต้องการบันทึกแบนเนอร์นี้?" : "Save this banner?")) return;
         setIsLoading(true);
         try {
             if (editingBanner) {
@@ -50,9 +49,9 @@ export default function AdminBannersPage() {
             setIsFormOpen(false);
             setEditingBanner(null);
             setPreviewImage(null);
-            alert(language === 'th' ? "บันทึกเรียบร้อย!" : "Saved successfully!");
+            alert(language === 'th' ? "บันทึกแบนเนอร์สำเร็จ!" : "Banner saved successfully!");
         } catch (error) {
-            alert(language === 'th' ? "เกิดข้อผิดพลาดในการบันทึก" : "Error saving banner");
+            alert(language === 'th' ? "เกิดข้อผิดพลาด" : "Error saving banner");
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -60,7 +59,6 @@ export default function AdminBannersPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm(language === 'th' ? "ลบแบนเนอร์นี้?" : "Delete this banner?")) return;
         setIsLoading(true);
         await deleteBanner(id);
         await loadData();

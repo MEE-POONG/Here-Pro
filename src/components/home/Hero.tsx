@@ -5,7 +5,7 @@ import { ArrowRight, Zap, ShieldCheck, Star, ChevronLeft, ChevronRight } from 'l
 import { useLanguage } from '@/context/LanguageContext';
 import { useState, useEffect } from 'react';
 
-import { getBanners, getProducts } from '@/actions/admin-actions';
+import { getBanners, getActiveProducts } from '@/actions/admin-actions';
 
 export function Hero() {
     const { t, language } = useLanguage();
@@ -45,7 +45,7 @@ export function Hero() {
                     setSlides(activeBanners);
                 } else {
                     // 2. Fallback: Try to load featured products if no banners
-                    const productData = await getProducts();
+                    const productData = await getActiveProducts();
                     const featured = productData.filter((p: any) => p.featured).map((p: any) => ({
                         id: p.id,
                         image: p.image,

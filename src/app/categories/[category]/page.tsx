@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Info, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { getProducts } from '@/actions/admin-actions';
+import { getActiveProducts } from '@/actions/admin-actions';
 
 export default function CategoryPage(props: { params: Promise<{ category: string }> }) {
     const { t } = useLanguage();
@@ -17,7 +17,7 @@ export default function CategoryPage(props: { params: Promise<{ category: string
     useEffect(() => {
         async function load() {
             try {
-                const data = await getProducts();
+                const data = await getActiveProducts();
                 setProducts(data);
             } catch (e) {
                 console.error(e);
