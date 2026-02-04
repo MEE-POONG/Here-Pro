@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
                             {error && (
                                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                                     {error}
@@ -82,7 +82,8 @@ export default function AdminLoginPage() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                         className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900"
-                                        placeholder="admin@here-pro.com"
+                                        placeholder="กรอกอีเมลของคุณ"
+                                        autoComplete="new-password"
                                     />
                                 </div>
                             </div>
@@ -100,7 +101,8 @@ export default function AdminLoginPage() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         className="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-gray-900"
-                                        placeholder="••••••••"
+                                        placeholder="กรอกรหัสผ่าน"
+                                        autoComplete="new-password"
                                     />
                                     <button
                                         type="button"

@@ -434,12 +434,43 @@ export async function trackVisit() {
 
 export async function getMonthlyVisits() {
     try {
+        // Sync stats first to ensure graph is accurate
+        await syncVisitStats();
+
         return await db.monthlyVisit.findMany({
             orderBy: { month: 'asc' },
-            take: 12
         });
     } catch {
         return [];
+    }
+}
+
+async function syncVisitStats() {
+    try {
+        const totalVisits = await db.globalStat.findUnique({ where: { key: 'total_visits' } });
+        const monthlyVisits = await db.monthlyVisit.findMany();
+
+        if (!totalVisits) return;
+
+        const currentTotal = totalVisits.value || 0;
+        const sumMonthly = monthlyVisits.reduce((sum, item) => sum + item.count, 0);
+
+        // If there is a mismatch, update the current month
+        if (sumMonthly < currentTotal) {
+            const diff = currentTotal - sumMonthly;
+            const now = new Date();
+            const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+            console.log(`Syncing stats: Adding ${diff} visits to ${monthKey}`);
+
+            await db.monthlyVisit.upsert({
+                where: { month: monthKey },
+                update: { count: { increment: diff } },
+                create: { month: monthKey, count: diff }
+            });
+        }
+    } catch (e) {
+        console.error("Failed to sync stats:", e);
     }
 }
 

@@ -38,6 +38,12 @@ body {
   /* Font family is handled by next/font class on body */
 }
 
+/* Hide default password reveal button in Edge/IE */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
 /* Custom utilities */
 .container-custom {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
