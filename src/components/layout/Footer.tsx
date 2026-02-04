@@ -16,27 +16,27 @@ export function Footer() {
                     <div>
                         <h4 className="text-white font-bold mb-6">{t.footer.about_us}</h4>
                         <ul className="space-y-3">
-                            <li><Link href="#" className="hover:text-white transition-colors">News</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Investor Relations</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Careers</Link></li>
+                            <li><Link href="/about" className="hover:text-white transition-colors">Our Story</Link></li>
+                            <li><Link href="/contact" className="hover:text-white transition-colors">Careers</Link></li>
+                            <li><Link href="/news" className="hover:text-white transition-colors">News</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="text-white font-bold mb-6">{t.footer.resources}</h4>
                         <ul className="space-y-3">
-                            <li><Link href="#" className="hover:text-white transition-colors">Get Started</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Learn</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Case Studies</Link></li>
+                            <li><Link href="/#products" className="hover:text-white transition-colors">Products</Link></li>
+                            <li><Link href="/categories/medicine" className="hover:text-white transition-colors">Medicine</Link></li>
+                            <li><Link href="/categories/supplements" className="hover:text-white transition-colors">Supplements</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="text-white font-bold mb-6">{t.footer.community}</h4>
                         <ul className="space-y-3">
-                            <li><Link href="#" className="hover:text-white transition-colors">Discord</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Events</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Blog</Link></li>
+                            <li><a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Discord</a></li>
+                            <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+                            <li><Link href="/about" className="hover:text-white transition-colors">Blog</Link></li>
                         </ul>
                     </div>
 
@@ -58,9 +58,9 @@ export function Footer() {
                     </div>
                     <p>{t.footer.rights}</p>
                     <div className="flex gap-4 text-white">
-                        <span>Fb</span>
-                        <span>X</span>
-                        <span>In</span>
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Fb</a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">X</a>
+                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">In</a>
                     </div>
                 </div>
             </div>

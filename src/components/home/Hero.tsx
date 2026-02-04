@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ArrowRight, Zap, ShieldCheck, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { getBanners, getActiveProducts } from '@/actions/admin-actions';
 
@@ -12,6 +13,7 @@ export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [slides, setSlides] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         async function loadContent() {
@@ -169,6 +171,14 @@ export function Hero() {
                                             key={slide.id}
                                             className={`${cardStyle}`}
                                             onClick={() => {
+                                                if (offset === 0 && slide.id) {
+                                                    // Navigate to product detail if available
+                                                    // Check if it's a product or banner. Assuming ID implies product or we need a link field
+                                                    // For now, let's link to /products/id assuming it's a product-like ID. 
+                                                    // If it's a banner without product link, maybe do nothing or scroll.
+                                                    // Let's assume all slides can link to product details if they have an ID.
+                                                    router.push(`/products/${slide.id}`);
+                                                }
                                                 if (offset === 1) nextSlide();
                                                 if (offset === length - 1) prevSlide();
                                             }}

@@ -2,7 +2,7 @@
 
 import { createUser, deleteUser, updateUser, getUsers } from "@/actions/admin-actions";
 import { useEffect, useState, useRef } from "react";
-import { Trash2, Plus, Pencil, X, Shield, Lock, Mail, User, Search } from "lucide-react";
+import { Trash2, Plus, Pencil, X, Shield, Lock, Mail, User, Search, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AdminUsersPage() {
@@ -21,6 +21,7 @@ export default function AdminUsersPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [showPassword, setShowPassword] = useState(false); // Added state
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
@@ -71,6 +72,7 @@ export default function AdminUsersPage() {
     function closeForm() {
         setIsFormOpen(false);
         setEditingUser(null);
+        setShowPassword(false);
     }
 
     return (
@@ -151,11 +153,18 @@ export default function AdminUsersPage() {
                                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                     <input
                                         name="password"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         required={!editingUser}
                                         placeholder={editingUser ? trans.form_pass_placeholder : "••••••••"}
-                                        className="w-full pl-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-800 outline-none text-gray-900 placeholder:text-gray-400 transition-all"
+                                        className="w-full pl-10 pr-10 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-800 outline-none text-gray-900 placeholder:text-gray-400 transition-all"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
                             </div>
                             <div>
