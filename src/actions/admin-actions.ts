@@ -64,7 +64,9 @@ async function saveFile(file: File): Promise<string> {
     const buffer = Buffer.from(bytes);
 
     // Create unique filename
-    const filename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    // Create secure unique filename (ASCII only) to avoid encoding issues
+    const ext = file.name.split('.').pop() || 'jpg';
+    const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${ext}`;
     const uploadDir = join(process.cwd(), 'public', 'uploads');
 
     try {
