@@ -77,7 +77,8 @@ async function saveFile(file: File): Promise<string> {
 
     const filepath = join(uploadDir, filename);
     await writeFile(filepath, buffer);
-    return `/uploads/${filename}`;
+    // Return API path instead of static path to ensure it works in Docker
+    return `/api/uploads/${filename}`;
 }
 
 export async function createProduct(formData: FormData) {
