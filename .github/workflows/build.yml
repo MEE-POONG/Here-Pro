@@ -58,15 +58,30 @@ jobs:
             docker stop ${{ steps.repository-name.outputs.lowercase }} || true
             docker rm ${{ steps.repository-name.outputs.lowercase }} || true
             
+            # Create uploads directory on host if not exists
+            mkdir -p /home/${{ secrets.SERVER_USER }}/here-pro-uploads
+
+            # Create uploads directory on host if not exists
+            mkdir -p /home/${{ secrets.SERVER_USER }}/here-pro-uploads
+
             # Run new container
             docker run -d \
               --name ${{ steps.repository-name.outputs.lowercase }} \
               --network kong_kong-net \
               --restart=always \
               -p 7080:3000 \
+              -v /home/${{ secrets.SERVER_USER }}/here-pro-uploads:/app/public/uploads \
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               -e NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
               -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e JWT_REFRESH_SECRET="${{ secrets.JWT_REFRESH_SECRET }}" \
+              -e CLOUDFLARE_API_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              -e CLOUDFLARE_ACCOUNT_ID="${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" \
+              -e CFIMG="${{ secrets.CFIMG }}" \
+              -e CLOUDFLARE_KEY="${{ secrets.CLOUDFLARE_KEY }}" \
+              -e MAIL_USER="${{ secrets.MAIL_USER }}" \
+              -e MAIL_PASS="${{ secrets.MAIL_PASS }}" \
               --memory=512m \
               --log-opt max-size=10m --log-opt max-file=3 \
               ${{ secrets.DOCKER_USERNAME }}/${{ steps.repository-name.outputs.lowercase }}:latest
