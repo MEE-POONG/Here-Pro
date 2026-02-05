@@ -63,6 +63,7 @@ jobs:
 
             # Create uploads directory on host if not exists
             mkdir -p /home/${{ secrets.SERVER_USER }}/here-pro-uploads
+            chmod -R 777 /home/${{ secrets.SERVER_USER }}/here-pro-uploads
 
             # Run new container
             docker run -d \
